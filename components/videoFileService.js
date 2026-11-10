@@ -187,6 +187,8 @@ export async function pickAndReplacePodcastVideo(existingVideo) {
 
   return {
     id: existingVideo?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    ...(existingVideo?.coverUri ? { coverUri: existingVideo.coverUri } : {}),
+    ...(existingVideo?.title ? { title: existingVideo.title } : {}),
     name: saved.name,
     uri: saved.uri,
   };

@@ -317,7 +317,14 @@ export async function listImportedAudio(libraryId) {
   // This directory already belongs exclusively to libraryId. Filtering its
   // files by matching names and sizes in the old shared directory can hide a
   // valid imported song, especially after the account-to-library migration.
-  return Promise.all(audioFilesIn(libraryDirectory).map(toTrack));
+  // Bound concurrent metadata reads so large libraries do not open every file
+  // and allocate every tag buffer at the same time.
+  const files = audioFilesIn(libraryDirectory);
+  const tracks = [];
+  for (let index = 0; index < files.length; index += 8) {
+    tracks.push(...await Promise.all(files.slice(index, index + 8).map(toTrack)));
+  }
+  return tracks;
 }
 
 export function getFolderLabel(folderUri) {

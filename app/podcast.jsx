@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Modal,
+  Alert,
+  TextInput,
   Platform,
   Pressable,
-  ScrollView,
+  FlatList,
   StatusBar,
   StyleSheet,
   Text,
@@ -15,8 +17,9 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import PodcastCard, { podcastTitle } from '../components/PodcastCard';
 import christmasBackground from '../assets/christmas_bg4.png';
-import { getPodcastVideos } from '../components/podcastVideoStorage';
+import { getPodcastVideos, savePodcastVideos, recordWatchedPodcast } from '../components/podcastVideoStorage';
 import { usePlayback } from '../components/PlaybackContext';
 
 const COLORS = {
@@ -28,20 +31,18 @@ const COLORS = {
   gold: '#f2bb4f',
 };
 
-function formatDuration(timeInSeconds) {
-  if (!Number.isFinite(timeInSeconds) || timeInSeconds <= 0) return '';
-  const total = Math.floor(timeInSeconds);
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
 export default function PodcastScreen() {
   const { videoId } = useLocalSearchParams();
+  const openedVideoRef = useRef(null);
   const insets = useSafeAreaInsets();
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [renameVideo, setRenameVideo] = useState(null);
+  const [renameText, setRenameText] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const { playing, stopPlayback } = usePlayback();
+  const stopPlaybackRef = useRef(stopPlayback);
+  useEffect(() => { stopPlaybackRef.current = stopPlayback; }, [stopPlayback]);
 
   const loadVideos = useCallback(() => {
     let active = true;
@@ -49,14 +50,16 @@ export default function PodcastScreen() {
       if (active) {
         setVideos(storedVideos);
         const requested = storedVideos.find((video) => video.id === videoId);
-        if (requested) {
-          stopPlayback?.();
+        if (requested && openedVideoRef.current !== requested.id) {
+          openedVideoRef.current = requested.id;
+          stopPlaybackRef.current?.();
           setSelectedVideo(requested);
+          recordWatchedPodcast(requested).catch((error) => console.warn('Could not save watch history:', error));
         }
       }
     });
-    return () => { active = false; };
-  }, [videoId, stopPlayback]);
+    return () => { active = false; setSelectedVideo(null); };
+  }, [videoId]);
 
   useFocusEffect(loadVideos);
 
@@ -65,6 +68,24 @@ export default function PodcastScreen() {
       stopPlayback();
     }
     setSelectedVideo(video);
+    recordWatchedPodcast(video).catch((error) => console.warn('Could not save watch history:', error));
+  };
+
+  const saveName = async () => {
+    if (!renameVideo || !renameText.trim() || savingName) return;
+    setSavingName(true);
+    try {
+      const stored = await getPodcastVideos();
+      const updated = stored.map((video) => video.id === renameVideo.id
+        ? { ...video, title: renameText.trim(), name: renameText.trim() } : video);
+      await savePodcastVideos(updated);
+      setVideos(updated);
+      setRenameVideo(null);
+    } catch {
+      Alert.alert('Rename podcast', 'Could not save the name. Please try again.');
+    } finally {
+      setSavingName(false);
+    }
   };
 
   return (
@@ -81,8 +102,8 @@ export default function PodcastScreen() {
             <Ionicons name="arrow-back" size={21} color={COLORS.green} />
           </Pressable>
           <View style={styles.headerTitles}>
-            <Text style={styles.title}>Podcast videos</Text>
-            <Text style={styles.subtitle}>Your video playlist</Text>
+            <Text style={styles.title}>Podcast</Text>
+            <Text style={styles.subtitle}>Your local podcast collection</Text>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -94,23 +115,21 @@ export default function PodcastScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {videos.length ? (
-            <View style={styles.videoList}>
-              {videos.map((video) => (
-                <PodcastVideoCard
-                  key={video.id}
-                  video={video}
-                  onPress={() => handlePlayVideo(video)}
-                />
-              ))}
-            </View>
-          ) : (
+        <FlatList
+          data={videos}
+          keyExtractor={(video) => video.id}
+          renderItem={({ item }) => <PodcastCard video={item} onPress={() => handlePlayVideo(item)} onRename={() => { setRenameVideo(item); setRenameText(podcastTitle(item)); }} />}
+          contentContainerStyle={styles.content}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          initialNumToRender={4}
+          maxToRenderPerBatch={4}
+          windowSize={5}
+          ListEmptyComponent={
             <View style={styles.emptyState}>
               <View style={styles.emptyIcon}>
                 <Ionicons name="videocam-outline" size={38} color={COLORS.green} />
               </View>
-              <Text style={styles.emptyTitle}>No podcast videos yet</Text>
+              <Text style={styles.emptyTitle}>No podcasts yet</Text>
               <Text style={styles.emptyMessage}>
                 Add podcast videos in Settings to play them here.
               </Text>
@@ -124,8 +143,8 @@ export default function PodcastScreen() {
                 <Text style={styles.emptyAddText}>Open Settings</Text>
               </Pressable>
             </View>
-          )}
-        </ScrollView>
+          }
+        />
 
         <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           {[
@@ -152,6 +171,18 @@ export default function PodcastScreen() {
         </View>
       </View>
 
+      <Modal visible={Boolean(renameVideo)} transparent animationType="fade" onRequestClose={() => { if (!savingName) setRenameVideo(null); }}>
+        <View style={styles.renameOverlay}>
+          <View style={styles.renameSheet}>
+            <Text style={styles.title}>Rename podcast</Text>
+            <TextInput accessibilityLabel="Podcast name" value={renameText} onChangeText={setRenameText} maxLength={150} autoFocus style={styles.renameInput} returnKeyType="done" onSubmitEditing={saveName} />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 20 }}>
+              <Pressable disabled={savingName} onPress={() => setRenameVideo(null)} style={{ padding: 10 }}><Text style={styles.subtitle}>Cancel</Text></Pressable>
+              <Pressable disabled={savingName || !renameText.trim()} onPress={saveName} style={{ padding: 10 }}><Text style={{ color: COLORS.green, fontFamily: 'NunitoBold' }}>{savingName ? 'Saving…' : 'Save'}</Text></Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <Modal visible={Boolean(selectedVideo)} animationType="fade" onRequestClose={() => setSelectedVideo(null)}>
         {selectedVideo ? <PodcastVideoPlayer video={selectedVideo} onClose={() => setSelectedVideo(null)} /> : null}
       </Modal>
@@ -159,90 +190,20 @@ export default function PodcastScreen() {
   );
 }
 
-function PodcastVideoCard({ video, onPress }) {
-  const [duration, setDuration] = useState(0);
-
-  const previewPlayer = useVideoPlayer(video.uri, (player) => {
-    player.muted = true;
-    player.pause();
-    player.currentTime = 0.5;
-  });
-
-  useEffect(() => {
-    const sub = previewPlayer.addListener('sourceLoad', (payload) => {
-      if (Number.isFinite(payload?.duration) && payload.duration > 0) {
-        setDuration(payload.duration);
-      }
-      try {
-        previewPlayer.currentTime = 0.5;
-        previewPlayer.pause();
-      } catch {}
-    });
-    return () => {
-      sub.remove();
-      try {
-        previewPlayer.pause();
-      } catch {}
-    };
-  }, [previewPlayer]);
-
-  return (
-    <View style={styles.videoCard}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Play ${video.name}`}
-        onPress={onPress}
-        style={({ pressed }) => [styles.videoMain, pressed && styles.videoPressed]}
-      >
-        <View style={styles.videoPreview}>
-          <VideoView
-            player={previewPlayer}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            nativeControls={false}
-            surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
-            pointerEvents="none"
-          />
-          <View style={styles.videoOverlay} pointerEvents="none">
-            <View style={styles.videoPlayBadge}>
-              <Ionicons name="play" size={26} color="#ffffff" style={{ marginLeft: 3 }} />
-            </View>
-          </View>
-          {duration > 0 ? (
-            <View style={styles.durationBadge}>
-              <Text style={styles.durationText}>{formatDuration(duration)}</Text>
-            </View>
-          ) : null}
-          <View style={styles.videoTag}>
-            <Text style={styles.videoTagText}>PODCAST</Text>
-          </View>
-        </View>
-
-        <View style={styles.videoDetailsRow}>
-          <View style={styles.videoDetails}>
-            <Text numberOfLines={2} style={styles.videoName}>{video.name}</Text>
-            <Text style={styles.videoType}>Podcast Video • Tap to play</Text>
-          </View>
-          <View style={styles.playActionPill}>
-            <Ionicons name="play-circle" size={28} color={COLORS.green} />
-          </View>
-        </View>
-      </Pressable>
-    </View>
-  );
-}
-
 function PodcastVideoPlayer({ video, onClose }) {
+  const [playbackError, setPlaybackError] = useState(null);
   const player = useVideoPlayer(video.uri, (videoPlayer) => {
     videoPlayer.play();
   });
 
   useEffect(() => {
-    return () => {
-      try {
-        player.pause();
-      } catch {}
-    };
+    const subscription = player.addListener('statusChange', ({ status, error }) => {
+      if (status === 'error') {
+        console.warn('Podcast video playback failed:', error);
+        setPlaybackError('This video could not be played. Try an MP4 video encoded with H.264 video and AAC audio.');
+      }
+    });
+    return () => subscription.remove();
   }, [player]);
 
   return (
@@ -258,12 +219,16 @@ function PodcastVideoPlayer({ video, onClose }) {
       <Pressable accessibilityRole="button" accessibilityLabel="Close video" onPress={onClose} style={styles.closeButton}>
         <Ionicons name="close" size={26} color="#fff" />
       </Pressable>
+      {playbackError ? <Text style={{ color: '#fff', padding: 24 }}>{playbackError}</Text> : null}
       <Text numberOfLines={1} style={styles.playingName}>{video.name}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  renameOverlay: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.65)' },
+  renameSheet: { borderRadius: 18, backgroundColor: COLORS.cream, padding: 20, gap: 16 },
+  renameInput: { borderWidth: 1, borderColor: COLORS.green, borderRadius: 10, padding: 12, color: COLORS.ink, fontSize: 16 },
   background: { flex: 1, width: '100%' },
   screen: { flex: 1, backgroundColor: 'transparent' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 20, paddingBottom: 16 },

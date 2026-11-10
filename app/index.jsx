@@ -7,15 +7,20 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import benjieBackgroundGif from '../assets/benjie_bg_loop.gif';
 import benjieGif from '../assets/benjie.gif';
+import emblemGif from '../assets/Animated MistleTunes Christmas Emblem.gif';
+import emblemFallback from '../assets/mistletunes_adaptive_foreground.png';
 
 // Benjie's GIF has 12 frames at 80 ms each (960 ms per run cycle).
 // Three run cycles match the full progress-bar travel and intro duration.
 const INTRO_DURATION_MS = 2880;
-const LOGO_DURATION_MS = 2200;
+const LOGO_DURATION_MS = 3000;
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const emblemSize = Math.max(0, Math.min(width * 0.8, (height - insets.top - insets.bottom) * 0.65, 380));
+  const [emblemReady, setEmblemReady] = useState(false);
+  const [emblemFailed, setEmblemFailed] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
   const [loadingProgress] = useState(() => new Animated.Value(0));
   const [loadingDots, setLoadingDots] = useState(0);
@@ -31,13 +36,15 @@ export default function Index() {
   });
 
   useEffect(() => {
+    if (!emblemReady) return;
+    // Start the three seconds only after the emblem is actually displayed.
+    SplashScreen.hide();
     const timer = setTimeout(() => setShowLoading(true), LOGO_DURATION_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [emblemReady]);
 
   useEffect(() => {
     if (!showLoading) return;
-    SplashScreen.hide();
     const loadingAnimation = Animated.timing(loadingProgress, {
       toValue: 1,
       duration: INTRO_DURATION_MS,
@@ -57,8 +64,27 @@ export default function Index() {
     };
   }, [loadingProgress, showLoading]);
 
-  // The native splash displays the logo on its own during this phase.
-  if (!showLoading) return <View style={styles.screen}><StatusBar hidden /></View>;
+  if (!showLoading) {
+    return (
+      <View style={[styles.screen, styles.emblemScreen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <StatusBar hidden />
+        <Image
+          source={emblemFailed ? emblemFallback : emblemGif}
+          contentFit="contain"
+          autoplay
+          isAnimated={!emblemFailed}
+          transition={0}
+          accessibilityLabel="Animated MistleTunes Christmas emblem"
+          onDisplay={() => setEmblemReady(true)}
+          onError={() => {
+            if (emblemFailed) setEmblemReady(true);
+            else setEmblemFailed(true);
+          }}
+          style={{ width: emblemSize, height: emblemSize }}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -83,6 +109,7 @@ export default function Index() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden', backgroundColor: '#073c2c' },
+  emblemScreen: { alignItems: 'center', justifyContent: 'center' },
   tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 24, 16, 0.16)' },
   loadingContent: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingLabel: { color: '#fff8e9', fontFamily: 'NunitoExtraBold', fontSize: 20, textAlign: 'center', marginBottom: 8 },

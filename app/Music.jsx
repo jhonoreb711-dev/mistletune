@@ -25,6 +25,8 @@ import { buildAlbums } from '../components/albumLibrary';
 import { getUserAlbums } from '../components/userAlbums';
 import { buildArtistCollections } from '../components/artistLibrary';
 import { getArtistCovers } from '../components/artistArtwork';
+import PodcastCard from '../components/PodcastCard';
+import { getRecentlyWatchedPodcasts } from '../components/podcastVideoStorage';
 import FadeInUp from '../components/FadeInUp';
 import PressableScale from '../components/PressableScale';
 
@@ -270,6 +272,7 @@ export default function Music() {
   const [userAlbums, setUserAlbums] = useState([]);
   const [hiddenAlbumIds, setHiddenAlbumIds] = useState([]);
   const [artistCovers, setArtistCovers] = useState({});
+  const [podcastVideos, setPodcastVideos] = useState([]);
   const { currentTrack, homeVideoPlayer, libraryId, playTrack, playQueue, recentlyPlayed, tracks, playing } = usePlayback();
 
   useEffect(() => {
@@ -298,6 +301,7 @@ export default function Music() {
 
   useFocusEffect(useCallback(() => {
     let active = true;
+    getRecentlyWatchedPodcasts().then((videos) => { if (active) setPodcastVideos(videos); });
     getArtistCovers(libraryId).then((covers) => {
       if (active) setArtistCovers(covers);
     });
@@ -506,6 +510,25 @@ export default function Music() {
               </ScrollView>
             </>
           ) : null}
+
+          <View style={[styles.sectionHeading, styles.artistCollectionsHeading]}>
+            <Text style={styles.sectionTitle}>Recently Watched</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="See all podcasts" onPress={() => router.push('/podcast')} hitSlop={8}>
+              <View style={styles.seeAllRow}><Text style={styles.seeAll}>See all</Text><Ionicons name="chevron-forward" size={14} color={COLORS.gold} /></View>
+            </Pressable>
+          </View>
+          {podcastVideos.length ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.homeAlbumsScroll} contentContainerStyle={styles.homeAlbumsRow}>
+              {podcastVideos.slice(0, 10).map((video) => (
+                <PodcastCard key={video.id} video={video} horizontal onPress={() => router.push({ pathname: '/podcast', params: { videoId: video.id } })} />
+              ))}
+            </ScrollView>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={() => router.push('/podcast')} style={styles.recentEmpty}>
+              <Ionicons name="videocam-outline" size={22} color={COLORS.gold} />
+              <Text style={styles.recentEmptyText}>Watch a podcast to see it here.</Text>
+            </Pressable>
+          )}
 
           {homeAlbums.length ? (
             <>

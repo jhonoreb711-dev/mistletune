@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
@@ -13,10 +13,13 @@ import { FavoritesProvider } from '../components/FavoritesContext';
 import MiniPlayerOverlay from '../components/MiniPlayerOverlay';
 import ChatBot from '../components/ChatBot';
 
-// Keep the native logo visible until the intro switches to Benjie's loading screen.
+// Hand off the native splash as soon as the animated emblem is displayed.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function Layout() {
+  const pathname = usePathname();
+  const isIntro = pathname === '/';
+  const isHome = pathname === '/Music';
   useFonts({
     NunitoRegular: Nunito_400Regular,
     NunitoMedium: Nunito_500Medium,
@@ -45,8 +48,8 @@ export default function Layout() {
       <Stack.Screen name="Settings" options={{ headerShown: false }} />
       <Stack.Screen name="podcast" options={{ headerShown: false }} />
     </Stack>
-    <MiniPlayerOverlay />
-    <ChatBot />
+    {!isIntro && <MiniPlayerOverlay />}
+    {isHome && <ChatBot />}
     </>
     </FavoritesProvider>
     </PlaybackProvider>

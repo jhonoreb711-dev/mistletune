@@ -9,12 +9,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import { ImageBackground } from 'expo-image';
+import { Image, ImageBackground } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayback } from './PlaybackContext';
-import { getPodcastVideos, savePodcastVideos } from './podcastVideoStorage';
+import { getPodcastVideos, savePodcastVideos, pickPodcastCover } from './podcastVideoStorage';
 import {
   pickAndSavePodcastVideos,
   pickAndReplacePodcastVideo,
@@ -94,6 +94,7 @@ export default function SettingsScreen() {
               await savePodcastVideos(updatedVideos);
               setPodcastVideos(updatedVideos);
               await deleteVideoFile(video.uri);
+              if (video.coverUri) await deleteVideoFile(video.coverUri);
               setStatusMessage(`Removed podcast video: ${video.name}`);
             } catch (error) {
               setStatusMessage(error.message || 'Could not remove that podcast video.');
@@ -102,6 +103,22 @@ export default function SettingsScreen() {
         },
       ]
     );
+  };
+
+  const changePodcastCover = async (video) => {
+    if (isChoosingPodcastVideos) return;
+    setIsChoosingPodcastVideos(true);
+    try {
+      const updated = await pickPodcastCover(video.id);
+      if (updated) {
+        setPodcastVideos(updated);
+        setStatusMessage(`Cover updated for ${video.title || video.name}`);
+      }
+    } catch (error) {
+      setStatusMessage(error.message || 'Could not save the podcast cover.');
+    } finally {
+      setIsChoosingPodcastVideos(false);
+    }
   };
 
   const handleChooseHomeVideo = async () => {
@@ -294,8 +311,14 @@ export default function SettingsScreen() {
                   <View style={styles.podcastVideoList}>
                     {podcastVideos.map((video) => (
                       <View key={video.id} style={styles.podcastVideoRow}>
-                        <View style={styles.podcastVideoIcon}><Ionicons name="videocam" size={18} color={COLORS.gold} /></View>
-                        <Text numberOfLines={1} style={styles.podcastVideoName}>{video.name}</Text>
+                        <View style={[styles.podcastVideoIcon, { overflow: 'hidden' }]}>{video.coverUri ? <Image source={{ uri: video.coverUri }} contentFit="cover" style={StyleSheet.absoluteFill} /> : <Ionicons name="videocam" size={18} color={COLORS.gold} />}</View>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text numberOfLines={1} style={styles.podcastVideoName}>{video.title || video.name}</Text>
+                          <Pressable accessibilityRole="button" accessibilityLabel={`Edit cover for ${video.title || video.name}`} disabled={isChoosingPodcastVideos} onPress={() => changePodcastCover(video)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 32 }}>
+                            <Ionicons name="image-outline" size={14} color={COLORS.green} />
+                            <Text style={{ color: COLORS.green, fontFamily: 'NunitoBold', fontSize: 12 }}>{video.coverUri ? 'Change cover' : 'Add cover'}</Text>
+                          </Pressable>
+                        </View>
                         <Pressable
                           accessibilityRole="button"
                           accessibilityLabel={`Replace ${video.name}`}
