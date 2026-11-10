@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#edf2f7"/>
+      <stop offset="0.3" stop-color="#fff"/>
+      <stop offset="0.7" stop-color="#fff"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+  <!-- Soft layered halos keep the glow visible in native SVG renderers. -->
+  <g fill="none" stroke="#6b9cff" stroke-linecap="round">
+    <g stroke-width="150" opacity=".12">
+      <rect x="81" y="360" width="64" height="160" rx="32"/><rect x="177" y="300" width="70" height="280" rx="35"/>
+      <rect x="273" y="230" width="74" height="420" rx="37"/><rect x="363" y="140" width="74" height="600" rx="37"/>
+      <rect x="453" y="230" width="74" height="420" rx="37"/><rect x="553" y="300" width="70" height="280" rx="35"/>
+      <rect x="655" y="360" width="64" height="160" rx="32"/>
+    </g>
+    <g stroke-width="64" opacity=".24">
+      <rect x="81" y="360" width="64" height="160" rx="32"/><rect x="177" y="300" width="70" height="280" rx="35"/>
+      <rect x="273" y="230" width="74" height="420" rx="37"/><rect x="363" y="140" width="74" height="600" rx="37"/>
+      <rect x="453" y="230" width="74" height="420" rx="37"/><rect x="553" y="300" width="70" height="280" rx="35"/>
+      <rect x="655" y="360" width="64" height="160" rx="32"/>
+    </g>
+    <g stroke-width="28" opacity=".38">
+      <rect x="81" y="360" width="64" height="160" rx="32"/><rect x="177" y="300" width="70" height="280" rx="35"/>
+      <rect x="273" y="230" width="74" height="420" rx="37"/><rect x="363" y="140" width="74" height="600" rx="37"/>
+      <rect x="453" y="230" width="74" height="420" rx="37"/><rect x="553" y="300" width="70" height="280" rx="35"/>
+      <rect x="655" y="360" width="64" height="160" rx="32"/>
+    </g>
+  </g>
+  <g fill="url(#bar)">
+    <rect x="81" y="360" width="64" height="160" rx="32"/>
+    <rect x="177" y="300" width="70" height="280" rx="35"/>
+    <rect x="273" y="230" width="74" height="420" rx="37"/>
+    <rect x="363" y="140" width="74" height="600" rx="37"/>
+    <rect x="453" y="230" width="74" height="420" rx="37"/>
+    <rect x="553" y="300" width="70" height="280" rx="35"/>
+    <rect x="655" y="360" width="64" height="160" rx="32"/>
+  </g>
+</svg>

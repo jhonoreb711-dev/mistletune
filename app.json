@@ -1,0 +1,87 @@
+{
+  "expo": {
+    "name": "MistleTunes",
+    "slug": "music-player",
+    "owner": "benchtadeo30",
+    "scheme": "musicplayer",
+    "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/mistletunes_logo_source.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/mistletunes_adaptive_foreground.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#073c2c"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#073c2c",
+        "foregroundImage": "./assets/mistletunes_adaptive_foreground.png"
+      },
+      "splash": {
+        "image": "./assets/mistletunes_adaptive_foreground.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#073c2c"
+      },
+      "package": "com.benchtadeo30steam.musicplayer",
+      "versionCode": 4
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/mistletunes_adaptive_foreground.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#073c2c"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/inter/900Black/Inter_900Black.ttf"
+          ]
+        }
+      ],
+      "expo-image",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true
+        }
+      ],
+      "expo-router",
+      "expo-video",
+      "expo-sqlite",
+      "expo-speech-recognition"
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "ee888f3f-dc1d-4688-b79f-a41348e63d63"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ee888f3f-dc1d-4688-b79f-a41348e63d63"
+    }
+  }
+}
