@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { ImageBackground } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -37,6 +37,7 @@ function formatDuration(timeInSeconds) {
 }
 
 export default function PodcastScreen() {
+  const { videoId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -45,10 +46,17 @@ export default function PodcastScreen() {
   const loadVideos = useCallback(() => {
     let active = true;
     getPodcastVideos().then((storedVideos) => {
-      if (active) setVideos(storedVideos);
+      if (active) {
+        setVideos(storedVideos);
+        const requested = storedVideos.find((video) => video.id === videoId);
+        if (requested) {
+          stopPlayback?.();
+          setSelectedVideo(requested);
+        }
+      }
     });
     return () => { active = false; };
-  }, []);
+  }, [videoId, stopPlayback]);
 
   useFocusEffect(loadVideos);
 

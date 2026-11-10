@@ -3,19 +3,20 @@ import { Animated, Easing, StyleSheet, Text, View, useWindowDimensions } from 'r
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import benjieBackgroundGif from '../assets/benjie_bg_loop.gif';
 import benjieGif from '../assets/benjie.gif';
-import mistletunesLogo from '../assets/mistletunes_adaptive_foreground.png';
 
 // Benjie's GIF has 12 frames at 80 ms each (960 ms per run cycle).
 // Three run cycles match the full progress-bar travel and intro duration.
 const INTRO_DURATION_MS = 2880;
+const LOGO_DURATION_MS = 2200;
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const logoSize = Math.max(0, Math.min(width * 0.65, (height - insets.top - insets.bottom) * 0.38, 280));
+  const { width } = useWindowDimensions();
+  const [showLoading, setShowLoading] = useState(false);
   const [loadingProgress] = useState(() => new Animated.Value(0));
   const [loadingDots, setLoadingDots] = useState(0);
   const progressWidth = Math.max(150, Math.min(width - 112, 280));
@@ -30,6 +31,13 @@ export default function Index() {
   });
 
   useEffect(() => {
+    const timer = setTimeout(() => setShowLoading(true), LOGO_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!showLoading) return;
+    SplashScreen.hide();
     const loadingAnimation = Animated.timing(loadingProgress, {
       toValue: 1,
       duration: INTRO_DURATION_MS,
@@ -47,7 +55,10 @@ export default function Index() {
       clearInterval(dotsTimer);
       clearTimeout(redirectTimer);
     };
-  }, [loadingProgress]);
+  }, [loadingProgress, showLoading]);
+
+  // The native splash displays the logo on its own during this phase.
+  if (!showLoading) return <View style={styles.screen}><StatusBar hidden /></View>;
 
   return (
     <View style={styles.screen}>
@@ -56,12 +67,6 @@ export default function Index() {
       <View pointerEvents="none" style={styles.tint} />
 
       <View style={[styles.loadingContent, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Image
-          source={mistletunesLogo}
-          contentFit="contain"
-          accessibilityLabel="MistleTunes logo"
-          style={{ width: logoSize, aspectRatio: 1, marginBottom: 20 }}
-        />
         <Text style={styles.loadingLabel}>Loading{'.'.repeat(loadingDots)}</Text>
         <View style={[styles.progressArea, { width: progressWidth }]}>
           <Animated.View style={[styles.character, { transform: [{ translateX: benjiePosition }] }]}>

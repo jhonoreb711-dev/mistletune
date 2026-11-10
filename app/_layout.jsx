@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
   Nunito_400Regular,
@@ -11,6 +12,9 @@ import { PlaybackProvider } from '../components/PlaybackContext';
 import { FavoritesProvider } from '../components/FavoritesContext';
 import MiniPlayerOverlay from '../components/MiniPlayerOverlay';
 import ChatBot from '../components/ChatBot';
+
+// Keep the native logo visible until the intro switches to Benjie's loading screen.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function Layout() {
   useFonts({

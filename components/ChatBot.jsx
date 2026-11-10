@@ -19,15 +19,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ImageBackground } from 'expo-image';
 import { usePlayback } from './PlaybackContext';
 import {
-  chatWithAi,
-  testConnection,
   parseSongRecommendations,
   formatMessageText,
-  getAiSettings,
-  saveAiSettings,
-  DEFAULT_OLLAMA_HOST,
-  DEFAULT_OLLAMA_MODEL,
-  DEFAULT_GROQ_MODEL,
 } from './ollamaService';
 import {
   createSession,
@@ -38,6 +31,9 @@ import {
   deleteSession,
   clearAllSessions,
 } from './chatDatabase';
+
+import { chatWithNlp } from './nlpService';
+import { getPodcastVideos } from './podcastVideoStorage';
 
 import chatBg from '../assets/christmas_bg3.png';
 
@@ -230,21 +226,11 @@ export default function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [renameTargetSession, setRenameTargetSession] = useState(null);
   const [renameText, setRenameText] = useState('');
-  const [aiProvider, setAiProvider] = useState('nlp');
-  const [ollamaHost, setOllamaHost] = useState(DEFAULT_OLLAMA_HOST);
-  const [ollamaModel, setOllamaModel] = useState(DEFAULT_OLLAMA_MODEL);
-  const [groqApiKey, setGroqApiKey] = useState('');
-  const [groqModel, setGroqModel] = useState(DEFAULT_GROQ_MODEL);
-  const [showGroqKey, setShowGroqKey] = useState(false);
-  const [testingConnection, setTestingConnection] = useState(false);
-  const [testResult, setTestResult] = useState(null);
-  // TTS state
-  const [ttsEnabled, setTtsEnabled] = useState(false);
-  const [ttsVoice, setTtsVoice] = useState('female');
+  const ttsVoice = 'female';
+  const [podcasts, setPodcasts] = useState([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState(null);
   // Speech recognition state
@@ -269,18 +255,6 @@ export default function ChatBot() {
     anim.start();
     return () => anim.stop();
   }, [pulse]);
-
-  useEffect(() => {
-    getAiSettings().then((cfg) => {
-      setAiProvider(cfg.provider);
-      setOllamaHost(cfg.ollamaHost);
-      setOllamaModel(cfg.ollamaModel);
-      setGroqApiKey(cfg.groqApiKey);
-      setGroqModel(cfg.groqModel);
-      setTtsEnabled(cfg.ttsEnabled);
-      setTtsVoice(cfg.ttsVoice || 'female');
-    });
-  }, []);
 
   const getGreetingText = useCallback(() => (
     tracks.length > 0
@@ -322,6 +296,7 @@ export default function ChatBot() {
   }, [getGreetingText]);
 
   const openChat = useCallback(() => {
+    getPodcastVideos().then(setPodcasts);
     setVisible(true);
     initChatSession();
   }, [initChatSession]);
@@ -334,7 +309,7 @@ export default function ChatBot() {
   const speakReply = useCallback((text, messageId = null) => {
     if (!text) return;
     const clean = text
-      .replace(/\[SONG:[^\]]+\]/gi, '')
+      .replace(/\[(?:SONG|PODCAST):[^\]]+\]/gi, '')
       .replace(/🎵[^\n]*/g, '')
       .replace(/[*_~`#>]+/g, '')
       .replace(/\n{2,}/g, '. ')
@@ -404,50 +379,6 @@ export default function ChatBot() {
       speakReply(text, id);
     }
   }, [isSpeaking, speakingMessageId, stopSpeaking, speakReply]);
-
-  // Preview voice sample in settings
-  const testVoiceSample = useCallback((voiceGender = ttsVoice) => {
-    const Speech = getSpeechModule();
-    if (!Speech) {
-      Alert.alert('Voice Preview', 'Speech synthesis is active in your production build.');
-      return;
-    }
-    const sample = voiceGender === 'male'
-      ? "Ho ho ho! I'm your MistleTunes DJ. What festive songs would you like to hear?"
-      : "Ho ho ho! I'm your MistleTunes DJ. Tell me your mood, and I'll play the perfect music!";
-
-    try {
-      Speech.stop();
-      setIsSpeaking(true);
-      setSpeakingMessageId('preview');
-      setSpeechActive?.(true);
-      Speech.speak(sample, {
-        language: 'en-US',
-        pitch: voiceGender === 'male' ? 0.75 : 1.15,
-        rate: voiceGender === 'male' ? 0.88 : 0.96,
-        onDone: () => {
-          setIsSpeaking(false);
-          setSpeakingMessageId(null);
-          setSpeechActive?.(false);
-        },
-        onError: () => {
-          setIsSpeaking(false);
-          setSpeakingMessageId(null);
-          setSpeechActive?.(false);
-        },
-        onStopped: () => {
-          setIsSpeaking(false);
-          setSpeakingMessageId(null);
-          setSpeechActive?.(false);
-        },
-      });
-    } catch (err) {
-      console.warn('Voice preview error:', err);
-      setIsSpeaking(false);
-      setSpeakingMessageId(null);
-      setSpeechActive?.(false);
-    }
-  }, [ttsVoice, setSpeechActive]);
 
   // Voice input: cancel on navigation, finalize on manual stop.
   const stopListening = useCallback(() => {
@@ -705,7 +636,7 @@ export default function ChatBot() {
     );
   }, [handleNewConversation]);
 
-  // Send message and stream Ollama response
+  // Answer using the built-in local library NLP.
   const sendMessage = useCallback(async (voiceText) => {
     const text = (typeof voiceText === 'string' ? voiceText : input).trim();
     if (!text || isTyping || !currentSession) return;
@@ -731,8 +662,8 @@ export default function ChatBot() {
       console.warn('Error saving user message to SQLite:', dbErr);
     }
 
-    // Build context history from current messages
-    const historyForOllama = messages.filter((m) => m.role !== 'system');
+    // Keep context for follow-up library requests.
+    const libraryHistory = messages.filter((m) => m.role !== 'system');
 
     // Add streaming assistant placeholder
     const aiPlaceholder = { role: 'assistant', content: '' };
@@ -740,35 +671,23 @@ export default function ChatBot() {
 
     let fullReply = '';
     try {
-      fullReply = await chatWithAi(text, tracks, historyForOllama, (streamedText) => {
+      const podcastLibrary = await getPodcastVideos();
+      setPodcasts(podcastLibrary);
+      fullReply = await chatWithNlp(text, tracks, (streamedText) => {
         setMessages((prev) => {
           const updated = [...prev];
           updated[updated.length - 1] = { role: 'assistant', content: streamedText };
           return updated;
         });
         scrollToBottom();
-      });
+      }, podcastLibrary, libraryHistory);
 
       // Persist assistant message
       await addMessageToSession(currentSession.id, 'assistant', fullReply);
 
-      // Speak the reply if TTS is enabled
-      if (ttsEnabled) {
-        speakReply(fullReply, currentSession.id + '-' + Date.now());
-      }
     } catch (err) {
-      let errMsg = '';
-      if (aiProvider === 'groq') {
-        if (!groqApiKey || !groqApiKey.trim()) {
-          errMsg = '⚠️ Online mode needs a cloud access key.\n\nTap ⚙️ in the top right to add your free key, or switch to Built-In mode for instant offline recommendations.';
-        } else {
-          errMsg = `❌ Online assistant error: ${err.message}`;
-        }
-      } else {
-        errMsg = err.message?.includes('fetch') || err.message?.includes('Network')
-          ? `❌ Cannot reach your computer at ${ollamaHost}.\n\nMake sure:\n• Your computer is turned on\n• Your phone and computer are on the same Wi-Fi\n• Or switch to Built-In mode in settings (⚙️)`
-          : `❌ Computer connection error: ${err.message}`;
-      }
+      const errMsg = 'Could not read your local library. Please try again.';
+      console.warn('Local chatbot error:', err);
 
       setMessages((prev) => {
         const updated = [...prev];
@@ -783,7 +702,7 @@ export default function ChatBot() {
       setIsTyping(false);
       scrollToBottom();
     }
-  }, [input, isTyping, currentSession, messages, tracks, aiProvider, groqApiKey, ollamaHost, scrollToBottom, stopSpeaking, isListening, stopListening, ttsEnabled, speakReply]);
+  }, [input, isTyping, currentSession, messages, tracks, scrollToBottom, stopSpeaking, isListening, stopListening]);
 
   useEffect(() => {
     if (!voiceMessage) return;
@@ -799,6 +718,11 @@ export default function ChatBot() {
     stopSpeaking();
     stopListening();
     setSpeechActive?.(false);
+    if (track?.mediaType === 'podcast') {
+      setVisible(false);
+      router.push({ pathname: '/podcast', params: { videoId: track.id } });
+      return;
+    }
     const songQuery = track?.title || title;
     setVisible(false);
     router.push({
@@ -818,69 +742,6 @@ export default function ChatBot() {
     setSpeechActive?.(false);
     setVisible(false);
   }, [stopSpeaking, stopListening, setSpeechActive]);
-
-  const handleTestConnection = useCallback(async (targetProvider = aiProvider) => {
-    setTestingConnection(true);
-    setTestResult(null);
-    try {
-      const res = await testConnection(targetProvider, {
-        groqApiKey,
-        groqModel,
-        ollamaHost,
-        ollamaModel,
-      });
-      setTestResult(res);
-      return res;
-    } catch (e) {
-      const res = { success: false, message: e.message || 'Connection test failed.' };
-      setTestResult(res);
-      return res;
-    } finally {
-      setTestingConnection(false);
-    }
-  }, [aiProvider, groqApiKey, groqModel, ollamaHost, ollamaModel]);
-
-  const saveSettings = useCallback(async () => {
-    if (aiProvider !== 'nlp') {
-      const test = await handleTestConnection(aiProvider);
-      if (!test.success) {
-        Alert.alert(
-          'Connection Test Warning',
-          `${test.message}\n\nDo you still want to save these settings anyway?`,
-          [
-            { text: 'Keep Editing', style: 'cancel' },
-            {
-              text: 'Save Anyway',
-              onPress: async () => {
-                await saveAiSettings({
-                  provider: aiProvider,
-                  ollamaHost: ollamaHost.trim(),
-                  ollamaModel: ollamaModel.trim(),
-                  groqApiKey: groqApiKey.trim(),
-                  groqModel: groqModel.trim(),
-                  ttsEnabled,
-                  ttsVoice,
-                });
-                setSettingsVisible(false);
-              },
-            },
-          ]
-        );
-        return;
-      }
-    }
-
-    await saveAiSettings({
-      provider: aiProvider,
-      ollamaHost: ollamaHost.trim(),
-      ollamaModel: ollamaModel.trim(),
-      groqApiKey: groqApiKey.trim(),
-      groqModel: groqModel.trim(),
-      ttsEnabled,
-      ttsVoice,
-    });
-    setSettingsVisible(false);
-  }, [aiProvider, handleTestConnection, ollamaHost, ollamaModel, groqApiKey, groqModel, ttsEnabled, ttsVoice]);
 
   return (
     <>
@@ -960,16 +821,6 @@ export default function ChatBot() {
                 <Ionicons name="add" size={23} color={COLORS.gold} />
               </Pressable>
 
-              {/* Settings Button */}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Chatbot settings"
-                onPress={() => setSettingsVisible(true)}
-                style={styles.chatHeaderBtn}
-              >
-                <Ionicons name="settings-outline" size={19} color={COLORS.gold} />
-              </Pressable>
-
               {/* Close Button */}
               <Pressable
                 accessibilityRole="button"
@@ -993,7 +844,7 @@ export default function ChatBot() {
                 <ChatMessage
                   key={msg.id || i}
                   message={msg}
-                  tracks={tracks}
+                  tracks={[...tracks, ...podcasts.map((video) => ({ ...video, mediaType: 'podcast' }))]}
                   onSongPress={handleSongPress}
                   onSpeak={handleToggleSpeak}
                   isSpeakingMessage={isSpeaking && speakingMessageId === (msg.id || msg.content)}
@@ -1237,353 +1088,6 @@ export default function ChatBot() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Settings Modal */}
-      <Modal
-        visible={settingsVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setSettingsVisible(false)}
-      >
-        <View style={styles.settingsOverlay}>
-          <ScrollView
-            contentContainerStyle={styles.settingsSheet}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.settingsHeader}>
-              <Text style={styles.settingsTitle}>⚙️ MistleTunes Chatbot Settings</Text>
-              <Pressable onPress={() => setSettingsVisible(false)} style={styles.settingsClose}>
-                <Ionicons name="close" size={22} color={COLORS.ink} />
-              </Pressable>
-            </View>
-
-            {/* Provider Switcher */}
-            <Text style={styles.settingsLabel}>Chatbot Mode</Text>
-            <View style={styles.providerToggleRow}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Use Built-In Mode"
-                onPress={() => {
-                  setAiProvider('nlp');
-                  setTestResult(null);
-                }}
-                style={[
-                  styles.providerBtn,
-                  aiProvider === 'nlp' && styles.providerBtnActive,
-                ]}
-              >
-                <Ionicons
-                  name={aiProvider === 'nlp' ? 'sparkles' : 'sparkles-outline'}
-                  size={18}
-                  color={aiProvider === 'nlp' ? COLORS.gold : COLORS.green}
-                />
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  style={[
-                    styles.providerBtnText,
-                    aiProvider === 'nlp' && styles.providerBtnTextActive,
-                  ]}
-                >
-                  Built-In
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Use Online Mode"
-                onPress={() => {
-                  setAiProvider('groq');
-                  setTestResult(null);
-                }}
-                style={[
-                  styles.providerBtn,
-                  aiProvider === 'groq' && styles.providerBtnActive,
-                ]}
-              >
-                <Ionicons
-                  name={aiProvider === 'groq' ? 'cloud' : 'cloud-outline'}
-                  size={18}
-                  color={aiProvider === 'groq' ? COLORS.gold : COLORS.green}
-                />
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  style={[
-                    styles.providerBtnText,
-                    aiProvider === 'groq' && styles.providerBtnTextActive,
-                  ]}
-                >
-                  Online
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Connect to Home Computer"
-                onPress={() => {
-                  setAiProvider('ollama');
-                  setTestResult(null);
-                }}
-                style={[
-                  styles.providerBtn,
-                  aiProvider === 'ollama' && styles.providerBtnActive,
-                ]}
-              >
-                <Ionicons
-                  name={aiProvider === 'ollama' ? 'desktop' : 'desktop-outline'}
-                  size={18}
-                  color={aiProvider === 'ollama' ? COLORS.gold : COLORS.green}
-                />
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  style={[
-                    styles.providerBtnText,
-                    aiProvider === 'ollama' && styles.providerBtnTextActive,
-                  ]}
-                >
-                  Computer
-                </Text>
-              </Pressable>
-            </View>
-
-            {aiProvider === 'nlp' ? (
-              <View style={styles.providerInfoBanner}>
-                <Text style={styles.providerInfoTitle}>✨ Built-In (Recommended)</Text>
-                <Text style={styles.providerInfoText}>
-                  Works immediately right on your phone. Recommends songs for your mood with zero setup.
-                </Text>
-                <View style={styles.nlpFeatureList}>
-                  <Text style={styles.nlpFeatureItem}>• ⚡ Instant recommendations with zero waiting</Text>
-                  <Text style={styles.nlpFeatureItem}>• 📴 Works 100% offline without internet</Text>
-                  <Text style={styles.nlpFeatureItem}>• 🔒 Completely private on your phone</Text>
-                </View>
-              </View>
-            ) : aiProvider === 'groq' ? (
-              <>
-                <View style={styles.providerInfoBanner}>
-                  <Text style={styles.providerInfoTitle}>🌐 Online Mode</Text>
-                  <Text style={styles.providerInfoText}>
-                    Enables free-form chatting and music trivia over the internet.
-                  </Text>
-                </View>
-
-                <Text style={styles.settingsLabel}>Cloud Access Key</Text>
-                <Text style={styles.settingsHint}>Free personal key from groq.com (enables online chat)</Text>
-                <View style={styles.inputWithAction}>
-                  <TextInput
-                    value={groqApiKey}
-                    onChangeText={(val) => {
-                      setGroqApiKey(val);
-                      setTestResult(null);
-                    }}
-                    style={[styles.settingsInput, { flex: 1 }]}
-                    placeholder="Paste your key here..."
-                    placeholderTextColor={COLORS.muted}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    secureTextEntry={!showGroqKey}
-                  />
-                  <Pressable
-                    onPress={() => setShowGroqKey((prev) => !prev)}
-                    style={styles.inputActionIcon}
-                  >
-                    <Ionicons
-                      name={showGroqKey ? 'eye-off-outline' : 'eye-outline'}
-                      size={20}
-                      color={COLORS.muted}
-                    />
-                  </Pressable>
-                </View>
-
-                <Text style={styles.settingsLabel}>Assistant Style (Optional)</Text>
-                <Text style={styles.settingsHint}>Leave as default for standard high-speed mode</Text>
-                <TextInput
-                  value={groqModel}
-                  onChangeText={setGroqModel}
-                  style={styles.settingsInput}
-                  placeholder="llama-3.1-8b-instant"
-                  placeholderTextColor={COLORS.muted}
-                  autoCapitalize="none"
-                />
-              </>
-            ) : (
-              <>
-                <View style={styles.providerInfoBanner}>
-                  <Text style={styles.providerInfoTitle}>💻 Desktop Computer Link</Text>
-                  <Text style={styles.providerInfoText}>
-                    Connects to an assistant running on your personal computer over home Wi-Fi.
-                  </Text>
-                </View>
-
-                <Text style={styles.settingsLabel}>Computer Wi-Fi Address</Text>
-                <Text style={styles.settingsHint}>Your computer&apos;s local address (e.g. http://192.168.1.xxx:11434)</Text>
-                <TextInput
-                  value={ollamaHost}
-                  onChangeText={(val) => {
-                    setOllamaHost(val);
-                    setTestResult(null);
-                  }}
-                  style={styles.settingsInput}
-                  placeholder="http://192.168.x.x:11434"
-                  placeholderTextColor={COLORS.muted}
-                  autoCapitalize="none"
-                  keyboardType="url"
-                />
-
-                <Text style={styles.settingsLabel}>Assistant Name</Text>
-                <Text style={styles.settingsHint}>The assistant installed on your computer</Text>
-                <TextInput
-                  value={ollamaModel}
-                  onChangeText={(val) => {
-                    setOllamaModel(val);
-                    setTestResult(null);
-                  }}
-                  style={styles.settingsInput}
-                  placeholder="phi4-mini"
-                  placeholderTextColor={COLORS.muted}
-                  autoCapitalize="none"
-                />
-              </>
-            )}
-
-            {/* Test Connection Button & Result Box for Online / Computer */}
-            {aiProvider !== 'nlp' ? (
-              <View style={styles.testSection}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Test Connection"
-                  disabled={testingConnection}
-                  onPress={() => handleTestConnection(aiProvider)}
-                  style={({ pressed }) => [
-                    styles.testButton,
-                    testingConnection && styles.testButtonDisabled,
-                    pressed && { opacity: 0.85 },
-                  ]}
-                >
-                  <Ionicons
-                    name={testingConnection ? 'hourglass-outline' : 'wifi-outline'}
-                    size={17}
-                    color={COLORS.cream}
-                  />
-                  <Text style={styles.testButtonText}>
-                    {testingConnection ? 'Checking Connection...' : 'Test Connection'}
-                  </Text>
-                </Pressable>
-
-                {testResult ? (
-                  <View
-                    style={[
-                      styles.testResultBox,
-                      testResult.success ? styles.testResultSuccess : styles.testResultError,
-                    ]}
-                  >
-                    <Ionicons
-                      name={testResult.success ? 'checkmark-circle' : 'alert-circle'}
-                      size={18}
-                      color={testResult.success ? '#0f5132' : '#842029'}
-                      style={{ marginTop: 1 }}
-                    />
-                    <Text
-                      style={[
-                        styles.testResultText,
-                        testResult.success ? styles.testResultTextSuccess : styles.testResultTextError,
-                      ]}
-                    >
-                      {testResult.message}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
-
-            <Pressable
-              onPress={saveSettings}
-              style={({ pressed }) => [styles.settingsSave, pressed && { opacity: 0.82 }]}
-            >
-              <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.cream} />
-              <Text style={styles.settingsSaveText}>Save Settings</Text>
-            </Pressable>
-
-            {/* ── Voice & Speech ── */}
-            <View style={styles.ttsDivider} />
-            <Text style={styles.settingsLabel}>🔊 Voice & Speech (100% Free & Offline)</Text>
-
-            {/* Text-to-Speech toggle */}
-            <View style={styles.ttsToggleRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.ttsToggleLabel}>Read Responses Aloud</Text>
-                <Text style={styles.settingsHint}>The DJ speaks every reply out loud</Text>
-              </View>
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: ttsEnabled }}
-                onPress={() => setTtsEnabled((v) => !v)}
-                style={[styles.ttsToggle, ttsEnabled && styles.ttsToggleOn]}
-              >
-                <View style={[styles.ttsThumb, ttsEnabled && styles.ttsThumbOn]} />
-              </Pressable>
-            </View>
-
-            {/* Voice gender picker & preview */}
-            <Text style={[styles.settingsLabel, { marginTop: 14 }]}>Voice Tone</Text>
-            <View style={styles.voicePickerRow}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Use female voice"
-                onPress={() => {
-                  setTtsVoice('female');
-                  testVoiceSample('female');
-                }}
-                style={[styles.voiceBtn, ttsVoice === 'female' && styles.voiceBtnActive]}
-              >
-                <Ionicons
-                  name="woman"
-                  size={18}
-                  color={ttsVoice === 'female' ? COLORS.gold : COLORS.green}
-                />
-                <Text style={[styles.voiceBtnText, ttsVoice === 'female' && styles.voiceBtnTextActive]}>
-                  Female
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Use male voice"
-                onPress={() => {
-                  setTtsVoice('male');
-                  testVoiceSample('male');
-                }}
-                style={[styles.voiceBtn, ttsVoice === 'male' && styles.voiceBtnActive]}
-              >
-                <Ionicons
-                  name="man"
-                  size={18}
-                  color={ttsVoice === 'male' ? COLORS.gold : COLORS.green}
-                />
-                <Text style={[styles.voiceBtnText, ttsVoice === 'male' && styles.voiceBtnTextActive]}>
-                  Male
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Test selected voice"
-                onPress={() => testVoiceSample(ttsVoice)}
-                style={styles.voiceTestBtn}
-              >
-                <Ionicons name="volume-medium-outline" size={17} color={COLORS.green} />
-                <Text style={styles.voiceTestBtnText}>Test Voice</Text>
-              </Pressable>
-            </View>
-
-            <Text style={styles.settingsFooter}>
-              🔒 Your conversations are saved privately on this device.
-            </Text>
-          </ScrollView>
-        </View>
-      </Modal>
     </>
   );
 }

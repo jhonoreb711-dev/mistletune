@@ -385,17 +385,16 @@ export async function chatWithAi(userMessage, tracks, history = [], onToken = nu
  * Parse the AI response and extract [SONG: ...] recommendations
  */
 export function parseSongRecommendations(text, tracks) {
-  const pattern = /\[SONG:\s*([^\]]+)\]/gi;
+  const pattern = /\[(SONG|PODCAST):\s*([^\]]+)\]/gi;
   const recommendations = [];
   let match;
 
   while ((match = pattern.exec(text)) !== null) {
-    const title = match[1].trim();
+    const title = match[2].trim();
     const normalizedTitle = title.toLowerCase();
-    const found = tracks.find((track) =>
-      (track.title || '').toLowerCase().includes(normalizedTitle) ||
-      normalizedTitle.includes((track.title || '').toLowerCase())
-    );
+    const candidates = tracks.filter((track) => match[1].toUpperCase() === 'PODCAST'
+      ? track.mediaType === 'podcast' : track.mediaType !== 'podcast');
+    const found = candidates.find((track) => (track.title || '').toLowerCase() === normalizedTitle);
     recommendations.push({ title, track: found || null });
   }
 
@@ -406,7 +405,7 @@ export function parseSongRecommendations(text, tracks) {
  * Returns the display text with [SONG:...] tags replaced by placeholders for rendering
  */
 export function formatMessageText(text) {
-  return text.replace(/\[SONG:\s*([^\]]+)\]/gi, '🎵 $1');
+  return text.replace(/\[(?:SONG|PODCAST):\s*([^\]]+)\]/gi, '🎵 $1');
 }
 
 /**

@@ -78,198 +78,115 @@ const MOOD_TAXONOMY = {
   },
 };
 
-const GREETING_KEYWORDS = [
-  'hi', 'hello', 'hey', 'sup', 'yo', 'good morning', 'good afternoon', 'good evening',
-  'howdy', 'greetings', 'ho ho ho'
-];
+
 
 /**
  * Tokenize and normalize input text into lowercase alphanumeric words
  */
-function tokenize(text) {
-  return (text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 1);
+
+function normalize(text) {
+  return String(text || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+const STOP_WORDS = new Set('i me my our the a an all every entire whole local library collection music song songs track tracks podcast podcasts video videos episode episodes please can could you show list give find search play recommend suggest want listen to for of in on from by have do what are is some any with and also how many total number'.split(' '));
+function containsPhrase(text, phrase) {
+  return phrase && (' ' + text + ' ').includes(' ' + phrase + ' ');
 }
 
-/**
- * Detect the primary mood from user message tokens
- */
-function detectMood(tokens) {
-  const scores = {};
-  for (const [moodKey, config] of Object.entries(MOOD_TAXONOMY)) {
-    scores[moodKey] = 0;
-    for (const token of tokens) {
-      if (config.keywords.includes(token)) {
-        scores[moodKey] += 2;
-      } else {
-        // Partial match
-        for (const kw of config.keywords) {
-          if (kw.length >= 4 && (token.includes(kw) || kw.includes(token))) {
-            scores[moodKey] += 1;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  let topMood = null;
-  let maxScore = 0;
-  for (const [moodKey, score] of Object.entries(scores)) {
-    if (score > maxScore) {
-      maxScore = score;
-      topMood = moodKey;
-    }
-  }
-
-  return maxScore > 0 ? topMood : null;
+function requestedTitle(message) {
+  const quoted = String(message).match(/["“]([^"”]+)["”]/);
+  if (quoted) return normalize(quoted[1]);
+  return normalize(message)
+    .replace(/^(?:(?:please|can you|could you|would you|i want to|i want|i would like to|i would like|listen to|play|find|search for|search|show me|give me|the song|a song|song|track|called|titled)\s+)+/, '')
+    .replace(/\s+by\s+.+$/, '')
+    .replace(/\s+please$/, '').trim();
 }
 
-/**
- * Check if the user is asking for a specific artist or title present in the library
- */
-function findDirectEntities(userText, tracks) {
-  const normalizedText = (userText || '').toLowerCase();
-  const matchedArtists = new Set();
-  const matchedTracks = [];
-
-  for (const track of tracks) {
-    const artist = (track.artist || '').toLowerCase().trim();
-    if (artist && artist !== 'unknown artist' && normalizedText.includes(artist)) {
-      matchedArtists.add(track.artist);
-    }
-    const title = (track.title || '').toLowerCase().trim();
-    if (title && title.length > 2 && normalizedText.includes(title)) {
-      matchedTracks.push(track);
-    }
+/** Resolve requests against the complete local catalog, without inventing metadata. */
+export async function chatWithNlp(userMessage, tracks = [], onToken = null, podcasts = [], history = []) {
+  let query = normalize(userMessage);
+  // Follow-up requests such as "show all of them" retain the previous subject.
+  if (/^(show |list |give me )?(all|more)( of them)?$/.test(query)) {
+    const previous = [...history].reverse().find((message) => message.role === 'user');
+    if (previous) query += ' ' + normalize(previous.content);
   }
-
-  return {
-    artists: Array.from(matchedArtists),
-    tracks: matchedTracks,
-  };
-}
-
-/**
- * Rank tracks based on detected mood, entities, and keyword relevance
- */
-function rankTracks(tracks, mood, entities, queryTokens) {
-  const moodConfig = mood ? MOOD_TAXONOMY[mood] : null;
-
-  const scored = tracks.map((track) => {
-    let score = 0;
-    const titleLower = (track.title || '').toLowerCase();
-    const artistLower = (track.artist || '').toLowerCase();
-    const albumLower = (track.album || '').toLowerCase();
-    const trackText = `${titleLower} ${artistLower} ${albumLower}`;
-
-    // 1. Entity match: artist mentioned directly
-    if (entities.artists.some((a) => artistLower.includes(a.toLowerCase()))) {
-      score += 15;
-    }
-
-    // 2. Entity match: title mentioned directly
-    if (entities.tracks.some((t) => t.id === track.id)) {
-      score += 25;
-    }
-
-    // 3. Mood keyword matches in title/album/artist
-    if (moodConfig) {
-      for (const kw of moodConfig.keywords) {
-        if (trackText.includes(kw)) {
-          score += 6;
-        }
-      }
-    }
-
-    // 4. Query token overlap
-    for (const token of queryTokens) {
-      if (['play', 'song', 'music', 'recommend', 'listen', 'want', 'give'].includes(token)) continue;
-      if (titleLower.includes(token)) score += 4;
-      if (artistLower.includes(token)) score += 3;
-      if (albumLower.includes(token)) score += 2;
-    }
-
-    // Small deterministic jitter based on track id so ties distribute evenly
-    const jitter = (track.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 5) * 0.1;
-
-    return { track, score: score + jitter };
+  const wantsPodcasts = /\b(podcasts?|videos?|episodes?)\b/.test(query);
+  const wantsMusic = /\b(music|songs?|tracks?)\b/.test(query);
+  const both = wantsPodcasts && wantsMusic;
+  const catalog = [
+    ...(!wantsPodcasts || both ? tracks.map((item) => ({ ...item, kind: 'song' })) : []),
+    ...(wantsPodcasts ? podcasts.map((item) => ({ ...item, kind: 'podcast' })) : []),
+  ];
+  const all = /\b(all|every|entire|whole)\b/.test(query);
+  const countOnly = /\b(how many|count|total|number of)\b/.test(query);
+  const requestedCount = query.match(/\b(\d+)\s+(?:songs?|tracks?|podcasts?|episodes?|videos?)\b/);
+  const limit = all || countOnly ? Infinity : requestedCount ? Math.max(1, Number(requestedCount[1])) : 5;
+  const terms = query.split(' ').filter((term) => term && !STOP_WORDS.has(term) && !/^\d+$/.test(term));
+  const moods = Object.values(MOOD_TAXONOMY).filter((mood) =>
+    mood.keywords.some((keyword) => containsPhrase(query, normalize(keyword))));
+  const fields = (item) => [item.title, item.artist, item.album, item.genre, item.description, item.author].map(normalize);
+  const artists = [...new Set(catalog.map((item) => normalize(item.artist)).filter((artist) =>
+    artist && artist !== 'unknown artist' && containsPhrase(query, artist)))];
+  const albums = [...new Set(catalog.map((item) => normalize(item.album)).filter((album) =>
+    album && album !== 'unknown album' && containsPhrase(query, album)))];
+  let matches = catalog.filter((item) => {
+    if (artists.length && !artists.includes(normalize(item.artist))) return false;
+    if (albums.length && !albums.includes(normalize(item.album))) return false;
+    return true;
   });
-
-  scored.sort((a, b) => b.score - a.score);
-
-  // Return the top 3-4 scoring tracks
-  return scored
-    .filter((s) => s.score > 0)
-    .slice(0, 4)
-    .map((s) => s.track);
-}
-
-/**
- * Chat with On-Device NLP engine.
- * Simulates streaming so the UI gets the same smooth typing effect.
- */
-export async function chatWithNlp(userMessage, tracks, onToken = null) {
-  if (!tracks || tracks.length === 0) {
-    const emptyReply = `🎄 Ho ho ho! I'm your MistleTunes DJ!\n\nYour library doesn't have any songs yet. Go to Settings, choose your music folder, and tap Rescan. Once you have songs, I'll recommend the best tracks for any mood! 🎵`;
-    onToken?.(emptyReply);
-    return emptyReply;
+  const titleQuery = requestedTitle(userMessage);
+  const exactTitles = matches.filter((item) => normalize(item.title) === titleQuery);
+  const mentionedTitles = matches.filter((item) => {
+    const title = normalize(item.title);
+    return title && containsPhrase(query, title) &&
+      title.split(' ').some((word) => !STOP_WORDS.has(word));
+  });
+  // A specific title takes precedence over mood words such as love, happy or night.
+  // Keep only the longest title phrase when titles overlap (Hello / Hello Again).
+  const longestTitle = Math.max(0, ...mentionedTitles.map((item) => normalize(item.title).length));
+  const directTitles = exactTitles.length ? exactTitles : mentionedTitles.filter((item) => normalize(item.title).length === longestTitle);
+  const broadRequest = /\b(recommend|suggest|mood|feel|feeling)\b/.test(query) ||
+    /\b(happy|sad|chill|relaxing|romantic|workout|christmas|calm|upbeat)\s+(music|songs|tracks)\b/.test(query);
+  const specificTitle = !all && !countOnly && !broadRequest &&
+    (!artists.length && !albums.length || /\b(play|called|titled)\b/.test(query));
+  if (directTitles.length && !all && !countOnly && !broadRequest) {
+    matches = directTitles;
+  } else if (specificTitle && titleQuery && !wantsPodcasts) {
+    // Partial titles must match every meaningful word; one shared word is insufficient.
+    const titleTerms = titleQuery.split(' ').filter((word) => !STOP_WORDS.has(word));
+    matches = titleTerms.length ? matches.filter((item) =>
+      titleTerms.every((word) => containsPhrase(normalize(item.title), word))) : [];
+  } else if (!artists.length && !albums.length && terms.length) {
+    matches = matches.map((item) => {
+      const metadata = fields(item);
+      const overlap = terms.reduce((score, term) => score + metadata.reduce((sum, field, index) =>
+        sum + (containsPhrase(field, term) ? (index === 0 ? 4 : 2) : 0), 0), 0);
+      const moodScore = moods.reduce((score, mood) => score + mood.keywords.reduce((sum, keyword) =>
+        sum + (metadata.some((field) => containsPhrase(field, normalize(keyword))) ? 2 : 0), 0), 0);
+      return { item, score: overlap + moodScore };
+    }).filter(({ score }) => score > 0).sort((a, b) => b.score - a.score).map(({ item }) => item);
   }
-
-  const queryTokens = tokenize(userMessage);
-  const detectedMood = detectMood(queryTokens);
-  const entities = findDirectEntities(userMessage, tracks);
-
-  // Check if it's just a greeting
-  const isOnlyGreeting = queryTokens.length <= 3 && queryTokens.some((t) => GREETING_KEYWORDS.includes(t));
-
-  let reply = '';
-
-  if (isOnlyGreeting && !detectedMood && entities.artists.length === 0 && entities.tracks.length === 0) {
-    const sample = tracks.slice(0, 3);
-    const samplePicks = sample
-      .map((t) => `• [SONG: ${t.title}] by ${t.artist || 'Unknown'}`)
-      .join('\n');
-
-    reply = `🎄 Ho ho ho! Hello there! I'm your MistleTunes DJ! 🎅\n\nI can see ${tracks.length} great tracks in your library.\n\nTell me: what's your mood right now? (Happy, Chill, Sad, Romantic, Workout, or Christmas)? Or tell me how your day went!\n\nHere are a few quick picks from your library:\n${samplePicks}\n\nTap any song above to search and play it! ✨`;
+  const label = both ? 'music and podcast items' : wantsPodcasts ? 'podcasts' : 'songs';
+  let reply;
+  if (/^(hi|hello|hey|good morning|good evening)$/.test(query)) {
+    reply = "Hello! Your library has " + tracks.length + " songs and " + podcasts.length +
+      " podcasts. Ask me to list all your music, find an artist or album, count your songs, or search your podcasts.";
+  } else if (!catalog.length) {
+    reply = "You have no " + label + " imported yet. Add them in the app's Settings, then ask me again.";
+  } else if (!matches.length) {
+    reply = "I couldn't find " + label + " matching that request in your local titles and metadata. Try a title, artist, album, or podcast topic. I can't infer audio content that isn't described in the metadata.";
+  } else if (countOnly) {
+    reply = "Your library has " + matches.length + " matching " + label + ".";
   } else {
-    let recommended = rankTracks(tracks, detectedMood, entities, queryTokens);
-
-    // If no strong matches, pick a varied selection
-    if (recommended.length === 0) {
-      recommended = tracks.slice(0, 3);
-    }
-
-    const songLines = recommended
-      .map((t, idx) => `${idx + 1}. [SONG: ${t.title}] by ${t.artist || 'Unknown'}`)
-      .join('\n');
-
-    if (entities.artists.length > 0) {
-      const artistName = entities.artists[0];
-      reply = `🎵 You got it! Here are top tracks by ${artistName} from your collection:\n\n${songLines}\n\nTap any song above to start jamming! 🎶`;
-    } else if (detectedMood) {
-      const config = MOOD_TAXONOMY[detectedMood];
-      reply = `${config.greeting}\n\n${songLines}\n\n💡 Tip: ${config.advice}\n\nTap any song card above to jump straight into it! 🎁`;
-    } else {
-      reply = `✨ I scanned your library for your request! Here are the best tracks to fit the moment:\n\n${songLines}\n\nTell me if you want something faster, softer, or in a different mood! 🎵`;
-    }
+    const selected = matches.slice(0, limit);
+    const filtered = artists.length || albums.length || terms.length;
+    reply = "Showing " + selected.length + " of " + matches.length + (filtered ? " matching " : " ") + label + ":\n\n" +
+      selected.map((item, index) => (index + 1) + ". [" + (item.kind === 'podcast' ? 'PODCAST' : 'SONG') +
+        ": " + item.title + "]" + (item.artist || item.author ? " by " + (item.artist || item.author) : '') +
+        (item.album ? " (" + item.album + ")" : '')).join('\n');
+    if (moods.length) reply += "\n\nThese matches use your library's titles and metadata.";
   }
-
-  // Simulate smooth token streaming for rich UI feel
-  if (onToken) {
-    const words = reply.split(' ');
-    let streamed = '';
-    for (let i = 0; i < words.length; i++) {
-      streamed += (i === 0 ? '' : ' ') + words[i];
-      onToken(streamed);
-      if (i % 3 === 0) {
-        await new Promise((res) => setTimeout(res, 20));
-      }
-    }
-  }
-
+  // Emit once: full-library lists should not incur a delay for every word.
+  onToken?.(reply);
   return reply;
 }

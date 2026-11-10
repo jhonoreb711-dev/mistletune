@@ -104,6 +104,7 @@ export function PlaybackProvider({ children }) {
   const player = useAudioPlaylist({ sources: playlistSources, loop: 'all' });
   const status = useAudioPlaylistStatus(player);
   const playerRef = useRef(player);
+  const lockScreenRegistration = useRef(null);
 
   const configureAudioMode = useCallback(() => {
     if (!audioModeReady.current) {
@@ -127,6 +128,7 @@ export function PlaybackProvider({ children }) {
     // The native media session must be configured after the audio mode is ready.
     // Otherwise Android can start playback before Expo Audio has the session ready.
     await configureAudioMode();
+    if (playerRef.current !== player) return;
 
     const artworkUrl = typeof track?.artwork === 'string' ? track.artwork : track?.artwork?.uri;
     const metadata = {
@@ -137,12 +139,19 @@ export function PlaybackProvider({ children }) {
     };
 
     try {
+      const registration = lockScreenRegistration.current;
+      const optionsKey = queueTracks.length > 1;
+      if (registration?.player === player && registration.optionsKey === optionsKey) {
+        player.updateLockScreenMetadata(metadata);
+        return;
+      }
       player.setActiveForLockScreen(true, metadata, {
         showNextTrack: queueTracks.length > 1,
         showPreviousTrack: queueTracks.length > 1,
         showSeekBackward: true,
         showSeekForward: true,
       });
+      lockScreenRegistration.current = { player, optionsKey };
     } catch (error) {
       console.warn('Could not activate Android media controls:', error);
     }
@@ -162,16 +171,14 @@ export function PlaybackProvider({ children }) {
     if (Platform.OS === 'web' || (Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient)) return;
     if (!currentTrack) {
       player.clearLockScreenControls();
+      lockScreenRegistration.current = null;
       return;
     }
-
+    // Wait for a real, loaded track. Queue changes replace the native player;
+    // registering before it is ready races the previous player's cleanup.
+    if (!status.isLoaded || !status.playing) return;
     activateLockScreenControls(currentTrack, queue.tracks, queue.recentItem).catch(() => {});
-  }, [activateLockScreenControls, currentTrack, player, queue.recentItem, queue.tracks]);
-
-  useEffect(() => {
-    if (!status.playing || !currentTrack) return;
-    activateLockScreenControls(currentTrack, queue.tracks, queue.recentItem).catch(() => {});
-  }, [activateLockScreenControls, currentTrack, queue.recentItem, queue.tracks, status.playing]);
+  }, [activateLockScreenControls, currentTrack, player, queue.recentItem, queue.tracks, status.isLoaded, status.playing]);
 
   useEventListener(player, 'trackChanged', ({ currentIndex }) => {
     if (!hasStartedPlayback.current) return;
@@ -185,14 +192,13 @@ export function PlaybackProvider({ children }) {
     const index = queue.tracks.findIndex((track) => track.id === pendingTrackId);
     if (index < 0) return;
     pendingTrackStart.current = null;
-    const track = queue.tracks[index];
-    activateLockScreenControls(track, queue.tracks, queue.recentItem).then(() => {
+    configureAudioMode().then(() => {
       player.skipTo(index);
       player.play();
     }).catch((error) => {
       console.warn('Could not start playlist playback:', error);
     });
-  }, [activateLockScreenControls, player, queue]);
+  }, [configureAudioMode, player, queue]);
 
   useEffect(() => {
     let active = true;
@@ -320,7 +326,7 @@ export function PlaybackProvider({ children }) {
       && queue.tracks.every((item, itemIndex) => item.id === queueTracks[itemIndex]?.id);
     if (queueMatches) {
       setQueue({ tracks: queueTracks, kind, recentItem });
-      activateLockScreenControls(track, queueTracks, recentItem).then(() => {
+      configureAudioMode().then(() => {
         player.skipTo(index);
         player.play();
       }).catch((error) => {
@@ -331,7 +337,7 @@ export function PlaybackProvider({ children }) {
       setQueue({ tracks: queueTracks, kind, recentItem });
     }
     return true;
-  }, [activateLockScreenControls, libraryId, player, queue]);
+  }, [configureAudioMode, libraryId, player, queue]);
 
   const playTrack = useCallback((track) => {
     setShuffleEnabled(false);

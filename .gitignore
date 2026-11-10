@@ -1,8 +1,13 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
 node_modules/
-
-# build & expo outputs
-dist/
 .expo/
+dist/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+credentials.json
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/

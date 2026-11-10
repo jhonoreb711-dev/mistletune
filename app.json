@@ -2,7 +2,7 @@
   "expo": {
     "name": "MistleTunes",
     "slug": "music-player",
-    "owner": "benchtadeo30",
+    "owner": "bangonon",
     "scheme": "musicplayer",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
@@ -15,7 +15,11 @@
       "backgroundColor": "#073c2c"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
+      }
     },
     "android": {
       "permissions": [
@@ -77,7 +81,7 @@
         }
       },
       "eas": {
-        "projectId": "ee888f3f-dc1d-4688-b79f-a41348e63d63"
+        "projectId": "975a181a-3dd2-49d7-aada-d5ff8d79c8ee"
       }
     },
     "updates": {
