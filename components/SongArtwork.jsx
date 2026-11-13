@@ -2,14 +2,14 @@ import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SongArtwork({ source, style, iconSize = 28, accessibilityLabel = 'Music artwork' }) {
+export default function SongArtwork({ source, style, iconSize = 28, accessibilityLabel = 'Music artwork', contentFit = 'cover' }) {
   if (source) {
     return (
       <Image
         key={typeof source === 'object' && source?.uri ? source.uri : 'artwork'}
         accessibilityLabel={accessibilityLabel}
         source={source}
-        contentFit="cover"
+        contentFit={contentFit}
         style={style}
         transition={120}
       />

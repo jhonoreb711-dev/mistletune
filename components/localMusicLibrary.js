@@ -258,12 +258,12 @@ export async function scanMusicFolder(folderUri, libraryId) {
   if (!libraryDirectory) return [];
   if (!folderUri) return listImportedAudio(libraryId);
   if (Platform.OS === 'android' && !folderUri.startsWith('content://')) {
-    throw new Error('This saved folder path cannot be rescanned on Android. Choose the music folder again, then rescan.');
+    throw new Error('Choose your music folder again and allow access to sync your songs automatically.');
   }
 
   const selectedDirectory = new Directory(folderUri);
   if (!selectedDirectory.exists) {
-    throw new Error('Cannot access the selected folder. Choose it again, then rescan.');
+    throw new Error('Cannot access the selected folder. Choose it again and allow access to sync your songs.');
   }
   let sourceFiles;
   try {

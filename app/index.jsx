@@ -6,12 +6,11 @@ import { router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import benjieBackgroundGif from '../assets/benjie_bg_loop.gif';
-import benjieGif from '../assets/benjie.gif';
+import benjieGif from '../assets/benjie_christmas_running.gif';
 import emblemGif from '../assets/Animated MistleTunes Christmas Emblem.gif';
 import emblemFallback from '../assets/mistletunes_adaptive_foreground.png';
 
-// Benjie's GIF has 12 frames at 80 ms each (960 ms per run cycle).
-// Three run cycles match the full progress-bar travel and intro duration.
+// Keep Benjie's loading animation and progress-bar travel on the same timer.
 const INTRO_DURATION_MS = 2880;
 const LOGO_DURATION_MS = 3000;
 

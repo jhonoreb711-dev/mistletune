@@ -11,3 +11,8 @@ android/local.properties
 android/.gradle/
 android/build/
 android/app/build/
+
+# Large model weights are provisioned on the build machine by npm run lyrics:models.
+assets/models/*.pte
+assets/models/*.bin
+assets/models/*.part

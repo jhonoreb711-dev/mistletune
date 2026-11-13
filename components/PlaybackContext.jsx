@@ -13,6 +13,9 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { HOME_VIDEO_URI_KEY, HOME_VIDEO_NAME_KEY } from './homeVideoStorage';
 import { pickAndSaveHomeVideo, restoreDefaultHomeVideo } from './videoFileService';
 import homeVideo from '../assets/youtube-video.mp4';
+import { generateOfflineLyrics } from './offlineTranscription';
+import { loadLyrics } from './lyricsStorage';
+import LyricsPreparationOverlay from './LyricsPreparationOverlay';
 
 const musicFolderKey = (libraryId) => `music-player.music-folder-uri:${libraryId}`;
 const EMPTY_TRACKS = [];
@@ -105,6 +108,11 @@ export function PlaybackProvider({ children }) {
   const status = useAudioPlaylistStatus(player);
   const playerRef = useRef(player);
   const lockScreenRegistration = useRef(null);
+  const preparation = useRef(null);
+  const requestNumber = useRef(0);
+  const startQueueNowRef = useRef(null);
+  const [lyricsPreparation, setLyricsPreparation] = useState(null);
+  const [lyricsRevision, setLyricsRevision] = useState(0);
 
   const configureAudioMode = useCallback(() => {
     if (!audioModeReady.current) {
@@ -181,6 +189,7 @@ export function PlaybackProvider({ children }) {
   }, [activateLockScreenControls, currentTrack, player, queue.recentItem, queue.tracks, status.isLoaded, status.playing]);
 
   useEventListener(player, 'trackChanged', ({ currentIndex }) => {
+    if (preparation.current) return;
     if (!hasStartedPlayback.current) return;
     const activeTrack = queue.tracks[currentIndex];
     if (activeTrack) setCurrentTrack(activeTrack);
@@ -192,7 +201,9 @@ export function PlaybackProvider({ children }) {
     const index = queue.tracks.findIndex((track) => track.id === pendingTrackId);
     if (index < 0) return;
     pendingTrackStart.current = null;
+    const token = requestNumber.current;
     configureAudioMode().then(() => {
+      if (token !== requestNumber.current || preparation.current) return;
       player.skipTo(index);
       player.play();
     }).catch((error) => {
@@ -312,10 +323,11 @@ export function PlaybackProvider({ children }) {
     updateTrackArtwork(trackId, null);
   }, [libraryId, updateTrackArtwork]);
 
-  const startQueue = useCallback((queueTracks, track, kind, recentItem = null) => {
+  const startQueueNow = useCallback((queueTracks, track, kind, recentItem = null) => {
     if (!track?.source || !queueTracks.length) return false;
     const index = queueTracks.findIndex((item) => item.id === track.id);
     if (index < 0) return false;
+    const token = requestNumber.current;
     hasStartedPlayback.current = true;
     setCurrentTrack(track);
     const historyEntry = recentItem ?? { type: 'track', id: track.id, title: track.title, artist: track.artist };
@@ -327,6 +339,7 @@ export function PlaybackProvider({ children }) {
     if (queueMatches) {
       setQueue({ tracks: queueTracks, kind, recentItem });
       configureAudioMode().then(() => {
+        if (token !== requestNumber.current || preparation.current) return;
         player.skipTo(index);
         player.play();
       }).catch((error) => {
@@ -338,6 +351,64 @@ export function PlaybackProvider({ children }) {
     }
     return true;
   }, [configureAudioMode, libraryId, player, queue]);
+
+  useEffect(() => { startQueueNowRef.current = startQueueNow; }, [startQueueNow]);
+
+  const finishPreparation = useCallback((playWithoutLyrics = false) => {
+    const pending = preparation.current;
+    requestNumber.current++;
+    preparation.current = null;
+    pending?.task?.cancel();
+    setLyricsPreparation(null);
+    if (playWithoutLyrics && pending) startQueueNowRef.current?.(...pending.args);
+  }, []);
+
+  useEffect(() => () => {
+    requestNumber.current++;
+    preparation.current?.task?.cancel();
+  }, []);
+
+  const startQueue = useCallback((queueTracks, track, kind, recentItem = null) => {
+    if (!track?.source || !queueTracks.some((item) => item.id === track.id)) return false;
+    const uri = typeof track.source === 'string' ? track.source : track.source?.uri;
+    // Podcast/video and nonlocal sources retain their original playback path.
+    if (!uri?.startsWith('file://') || !/\.(mp3|m4a|aac|wav|flac|ogg)(?:\?|$)/i.test(uri)) {
+      finishPreparation();
+      return startQueueNowRef.current?.(queueTracks, track, kind, recentItem) ?? false;
+    }
+    pendingTrackStart.current = null;
+    playerRef.current.pause();
+    preparation.current?.task?.cancel();
+    const token = ++requestNumber.current;
+    const pending = { args: [queueTracks, track, kind, recentItem], task: null };
+    preparation.current = pending;
+    const update = (patch) => {
+      if (token === requestNumber.current) setLyricsPreparation((state) => ({ title: track.title, stage: 'Checking saved lyrics', progress: 0, ...state, ...patch }));
+    };
+    update({ title: track.title, stage: 'Checking saved lyrics', progress: 0, error: null });
+    void (async () => {
+      try {
+        const imported = await loadLyrics(libraryId, track.id);
+        if (token !== requestNumber.current) return;
+        if (!imported || imported.generated) {
+          pending.task = generateOfflineLyrics(track, {
+            libraryId,
+            onStage: (stage) => update({ stage }),
+            onProgress: (progress) => update({ progress }),
+          });
+          await pending.task.promise;
+        }
+        if (token !== requestNumber.current) return;
+        preparation.current = null;
+        setLyricsPreparation(null);
+        setLyricsRevision((revision) => revision + 1);
+        startQueueNowRef.current?.(...pending.args);
+      } catch (error) {
+        if (token === requestNumber.current) update({ error: error.message || 'Offline lyrics generation failed.' });
+      }
+    })();
+    return true;
+  }, [finishPreparation, libraryId]);
 
   const playTrack = useCallback((track) => {
     setShuffleEnabled(false);
@@ -351,6 +422,7 @@ export function PlaybackProvider({ children }) {
   }, [startQueue]);
 
   const togglePlayback = useCallback(() => {
+    if (preparation.current) return;
     if (!currentTrack) {
       const firstPlayable = tracks.find((track) => track.source);
       if (firstPlayable) playTrack(firstPlayable);
@@ -407,6 +479,7 @@ export function PlaybackProvider({ children }) {
   }, [loopMode]);
 
   const stopPlayback = useCallback(() => {
+    finishPreparation();
     pendingTrackStart.current = null;
     hasStartedPlayback.current = false;
     setShuffleEnabled(false);
@@ -414,7 +487,7 @@ export function PlaybackProvider({ children }) {
     player.seekTo(0);
     setCurrentTrack(null);
     setQueue({ tracks: EMPTY_TRACKS, kind: 'library' });
-  }, [player]);
+  }, [finishPreparation, player]);
 
   const value = useMemo(() => ({
     homeVideoPlayer,
@@ -425,6 +498,7 @@ export function PlaybackProvider({ children }) {
     isSpeechActive,
     setSpeechActive,
     currentTrack,
+    lyricsRevision,
     editTrackArtwork,
     clearTrackArtwork,
     libraryId,
@@ -450,9 +524,11 @@ export function PlaybackProvider({ children }) {
     toggleLoopMode,
     stopPlayback,
     seekTo: (seconds) => player.seekTo(seconds),
-  }), [homeVideoPlayer, homeVideoName, isCustomHomeVideo, changeHomeVideo, resetHomeVideo, isSpeechActive, setSpeechActive, libraryId, addAudioFiles, chooseMusicFolder, clearTrackArtwork, currentTrack, editTrackArtwork, loopMode, musicFolderUri, player, playQueue, playTrack, recentlyPlayed, rescanMusicFolder, shuffleEnabled, toggleShuffle, toggleLoopMode, queue.tracks.length, skip, status.currentTime, status.duration, status.playing, stopPlayback, togglePlayback, tracks]);
+  }), [homeVideoPlayer, homeVideoName, isCustomHomeVideo, changeHomeVideo, resetHomeVideo, isSpeechActive, setSpeechActive, libraryId, lyricsRevision, addAudioFiles, chooseMusicFolder, clearTrackArtwork, currentTrack, editTrackArtwork, loopMode, musicFolderUri, player, playQueue, playTrack, recentlyPlayed, rescanMusicFolder, shuffleEnabled, toggleShuffle, toggleLoopMode, queue.tracks.length, skip, status.currentTime, status.duration, status.playing, stopPlayback, togglePlayback, tracks]);
 
-  return <PlaybackContext.Provider value={value}>{children}</PlaybackContext.Provider>;
+  return <PlaybackContext.Provider value={value}>{children}
+    <LyricsPreparationOverlay state={lyricsPreparation} onCancel={() => finishPreparation()} onSkip={() => finishPreparation(true)} />
+  </PlaybackContext.Provider>;
 }
 
 export function usePlayback() {

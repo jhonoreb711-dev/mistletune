@@ -1,18 +1,22 @@
-import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ImageBackground } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { usePlayback } from './PlaybackContext';
 import { useFavorites } from './FavoritesContext';
 import SongArtwork from './SongArtwork';
+import SongCoverDialog from './SongCoverDialog';
+import LyricsScreen from './LyricsScreen';
+import HighwayPlayerArtwork from './HighwayPlayerArtwork';
 import christmasBackground from '../assets/christmas_bg.png';
 
 const formatTime = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 
 export default function PlayerScreen() {
+  const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const {
@@ -35,12 +39,25 @@ export default function PlayerScreen() {
   const [trackWidth, setTrackWidth] = useState(0);
   const [scrubbingTime, setScrubbingTime] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [playerView, setPlayerView] = useState(0);
+  const [coverTarget, setCoverTarget] = useState(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [coverError, setCoverError] = useState(null);
+  const [lyricsVisible, setLyricsVisible] = useState(false);
+  const artworkPagerRef = useRef(null);
   const scrubbingTimeRef = useRef(null);
   const feedbackTimerRef = useRef(null);
   const track = currentTrack;
   const displayedTime = scrubbingTime ?? currentTime;
   const progress = duration ? Math.max(0, Math.min(displayedTime / duration, 1)) : 0;
-  const coverSize = Math.max(152, Math.min(width * 0.76, (height - insets.top - insets.bottom) * 0.35, 280));
+  const pageWidth = Math.max(1, width - 16 - insets.left - insets.right);
+  const coverSize = Math.max(96, Math.min(pageWidth, (height - insets.top - insets.bottom) * 0.35, 280));
+
+  useEffect(() => {
+    artworkPagerRef.current?.scrollTo({ x: playerView * pageWidth, animated: false });
+  }, [pageWidth, playerView]);
+
+  const changePlayerView = (index) => artworkPagerRef.current?.scrollTo({ x: index * pageWidth, animated: true });
 
   useEffect(() => {
     return () => {
@@ -98,25 +115,32 @@ export default function PlayerScreen() {
 
   const editCover = () => {
     if (!track) return;
-    const changeCover = async () => {
-      try {
-        await editTrackArtwork(track.id);
-      } catch {
-        Alert.alert('Could not change cover', 'Please choose another image and try again.');
-      }
-    };
-    const actions = [{ text: 'Change cover', onPress: changeCover }];
-    if (track.artwork) {
-      actions.push({ text: 'Remove cover', style: 'destructive', onPress: () => clearTrackArtwork(track.id).catch(() => Alert.alert('Could not remove cover', 'Please try again.')) });
+    setCoverError(null);
+    setCoverTarget(track);
+  };
+
+  const updateCover = async (remove = false) => {
+    if (!coverTarget || coverBusy) return;
+    setCoverBusy(true);
+    setCoverError(null);
+    try {
+      if (remove) await clearTrackArtwork(coverTarget.id);
+      else await editTrackArtwork(coverTarget.id);
+      setCoverTarget(null);
+    } catch {
+      setCoverError(remove ? 'Could not remove the cover. Please try again.' : 'Could not save that image. Please choose another one.');
+    } finally {
+      setCoverBusy(false);
     }
-    actions.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert('Song cover', 'Choose an image for this song.', actions);
   };
 
   return (
+    <>
+    {lyricsVisible && <LyricsScreen onClose={() => setLyricsVisible(false)} />}
+    <SongCoverDialog track={coverTarget} busy={coverBusy} error={coverError} onClose={() => setCoverTarget(null)} onChange={() => updateCover(false)} onRemove={() => updateCover(true)} />
     <ImageBackground source={christmasBackground} contentFit="cover" style={styles.background}>
       <View style={styles.overlay} />
-      <View style={[styles.screen, { paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom, 8) + 8 }]}>
+      <View style={[styles.screen, { paddingLeft: 8 + insets.left, paddingRight: 8 + insets.right, paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom, 8) + 8 }]}>
         <View style={styles.topBar}>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} hitSlop={12}>
             <Ionicons name="chevron-down" size={28} color="white" />
@@ -124,17 +148,45 @@ export default function PlayerScreen() {
           <Text style={styles.nowPlaying}>NOW PLAYING</Text>
           <View style={styles.topBarSpacer} />
         </View>
-        <View style={styles.playerContent}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={track?.artwork ? 'Edit song cover' : 'Add song cover'}
-            accessibilityHint="Choose or remove the artwork for this song"
-            disabled={!track}
-            onPress={editCover}
-            style={[styles.coverButton, { width: coverSize }]}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.playerContent, { gap: height < 700 ? 10 : 16 }]} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            ref={artworkPagerRef}
+            horizontal
+            pagingEnabled
+            directionalLockEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ width: pageWidth, height: coverSize, flexGrow: 0, flexShrink: 0 }}
+            onMomentumScrollEnd={(event) => setPlayerView(Math.max(0, Math.min(1, Math.round(event.nativeEvent.contentOffset.x / pageWidth))))}
           >
-            <SongArtwork source={track?.artwork} iconSize={112} style={[styles.cover, { width: '100%' }]} />
-          </Pressable>
+            {[0, 1].map((index) => (
+              <View key={index} style={{ width: pageWidth, height: coverSize, alignItems: 'center', justifyContent: 'center' }}>
+                {index === 0 ? <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={index === 0 ? 'Album artwork: edit cover' : 'CD Highway animation: edit song cover'}
+                  accessibilityHint="Tap to change the cover. Swipe left or right to change player style."
+                  disabled={!track}
+                  onPress={editCover}
+                  style={{ width: index === 0 ? coverSize : pageWidth, height: coverSize, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <SongArtwork source={track?.artwork} contentFit="contain" iconSize={coverSize * 0.4} style={[styles.cover, { width: coverSize, height: coverSize }]} />
+                </Pressable> : <HighwayPlayerArtwork width={pageWidth} height={coverSize} active={playing && playerView === 1 && isFocused} artwork={track?.artwork} onEditCover={editCover} editable={Boolean(track)} />}
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.playerOptions}>
+            <View style={styles.viewSelector}>
+            {['Classic', 'CD Highway'].map((label, index) => (
+              <Pressable key={label} accessibilityRole="button" accessibilityLabel={`Show ${label} player`} accessibilityState={{ selected: playerView === index }} onPress={() => changePlayerView(index)} style={[styles.viewOption, playerView === index && styles.viewOptionActive]}>
+                <View style={[styles.viewDot, playerView === index && styles.viewDotActive]} />
+                <Text style={[styles.viewLabel, playerView === index && styles.viewLabelActive]}>{label}</Text>
+              </Pressable>
+            ))}
+            </View>
+            <Pressable accessibilityRole="button" accessibilityLabel="Open offline lyrics" accessibilityState={{ disabled: !track }} disabled={!track} onPress={() => setLyricsVisible(true)} style={[styles.lyricsButton, !track && styles.lyricsButtonDisabled]}>
+              <Ionicons name="document-text-outline" size={18} color="#f4c86a" />
+              <Text style={styles.lyricsButtonText}>Lyrics</Text>
+            </Pressable>
+          </View>
           <View style={styles.trackInfo}>
             <View style={styles.trackText}>
               <Text numberOfLines={2} style={styles.title}>{track?.title ?? 'Choose a song'}</Text>
@@ -224,7 +276,7 @@ export default function PlayerScreen() {
               ) : null}
             </Pressable>
           </View>
-        </View>
+        </ScrollView>
         <View style={styles.device}><Ionicons name="phone-portrait-outline" size={15} color="white" /><Text style={styles.deviceText}>Playing on this device</Text></View>
       </View>
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
@@ -242,10 +294,22 @@ export default function PlayerScreen() {
         </Svg>
       </View>
     </ImageBackground>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  playerOptions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  lyricsButton: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 12, borderRadius: 23, backgroundColor: 'rgba(3,23,20,0.8)', borderWidth: 1, borderColor: 'rgba(244,200,106,0.45)' },
+  lyricsButtonDisabled: { opacity: 0.45 },
+  lyricsButtonText: { color: '#f4c86a', fontFamily: 'NunitoBold', fontSize: 11 },
+  viewSelector: { flexDirection: 'row', alignSelf: 'center', gap: 6, padding: 3, borderRadius: 22, backgroundColor: 'rgba(3,23,20,0.8)', borderWidth: 1, borderColor: 'rgba(244,200,106,0.3)' },
+  viewOption: { minHeight: 38, paddingHorizontal: 14, borderRadius: 19, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  viewOptionActive: { backgroundColor: '#fff8e9' },
+  viewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#baa878' },
+  viewDotActive: { backgroundColor: '#174d38' },
+  viewLabel: { color: '#e2d2ad', fontFamily: 'NunitoBold', fontSize: 11 },
+  viewLabelActive: { color: '#174d38' },
   background: { flex: 1, backgroundColor: '#09261f' },
   overlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(3, 23, 20, 0.40)' },
   screen: { flex: 1, paddingHorizontal: 25 },
@@ -254,7 +318,7 @@ const styles = StyleSheet.create({
   nowPlaying: { color: 'white', fontFamily: 'NunitoExtraBold', fontSize: 12, letterSpacing: 1.2 },
   cover: { maxWidth: 300, aspectRatio: 1, borderRadius: 16, backgroundColor: '#12372b', alignSelf: 'center' },
   coverButton: { maxWidth: 300, aspectRatio: 1, alignSelf: 'center' },
-  playerContent: { flex: 1, justifyContent: 'center', gap: 16 },
+  playerContent: { flexGrow: 1, paddingVertical: 16, justifyContent: 'center', gap: 16 },
   trackInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   trackText: { flex: 1 },
   title: { color: 'white', fontFamily: 'NunitoExtraBold', fontSize: 20 },

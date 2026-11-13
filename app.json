@@ -5,7 +5,7 @@
     "owner": "bangonon",
     "scheme": "musicplayer",
     "version": "1.0.0",
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/mistletunes_logo_source.png",
     "userInterfaceStyle": "light",
@@ -72,7 +72,8 @@
       "expo-router",
       "expo-video",
       "expo-sqlite",
-      "expo-speech-recognition"
+      "expo-speech-recognition",
+      "expo-asset"
     ],
     "extra": {
       "router": {

@@ -668,7 +668,7 @@ export default function Music() {
               <View style={styles.emptySongs}>
                 <Ionicons name="musical-notes-outline" size={26} color={COLORS.green} />
                 <Text style={styles.emptySongsTitle}>No songs yet</Text>
-                <Text style={styles.emptySongsMessage}>Choose your music folder in Settings, then rescan it.</Text>
+                <Text style={styles.emptySongsMessage}>Choose your music folder in Settings. Songs sync automatically after you allow access.</Text>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/Settings')} style={styles.emptySongsButton}>
                   <Text style={styles.emptySongsButtonText}>Open Settings</Text>
                 </Pressable>

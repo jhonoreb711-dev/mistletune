@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+credentials.json
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+assets/models/*.part
+# Deliberately include assets/models/*.pte and *.bin in the EAS upload.

@@ -38,7 +38,6 @@ export default function SettingsScreen() {
     resetHomeVideo,
     musicFolderName,
     chooseMusicFolder,
-    rescanMusicFolder,
     addAudioFiles,
   } = usePlayback();
 
@@ -149,31 +148,30 @@ export default function SettingsScreen() {
   };
 
   const pickMusicFolder = async () => {
+    if (scanInProgress.current) return;
+    scanInProgress.current = true;
+    setIsScanning(true);
+    setStatusMessage('Choose a folder and tap Use this folder. Your songs will sync automatically.');
     try {
       const { folderName, trackCount } = await chooseMusicFolder();
-      setStatusMessage(`${folderName}: ${trackCount} ${trackCount === 1 ? 'track' : 'tracks'} added.`);
+      setStatusMessage(folderName + ': ' + trackCount + (trackCount === 1 ? ' track synced.' : ' tracks synced.'));
     } catch (error) {
-      setStatusMessage(error.message || 'Could not choose a music folder.');
+      setStatusMessage(error.message || 'Could not sync the selected music folder.');
+    } finally {
+      scanInProgress.current = false;
+      setIsScanning(false);
     }
   };
 
-  const rescanMusic = async () => {
+  const addMusicFiles = async () => {
     if (scanInProgress.current) return;
-    if (!musicFolderName && Platform.OS === 'android') {
-      setStatusMessage('Choose a music folder first.');
-      return;
-    }
     scanInProgress.current = true;
     setIsScanning(true);
     try {
-      const count = Platform.OS === 'android'
-        ? await rescanMusicFolder()
-        : await addAudioFiles();
-      setStatusMessage(count
-        ? `Found ${count} ${count === 1 ? 'track' : 'tracks'} in ${musicFolderName}.`
-        : 'No audio files found. Check the folder and try again.');
+      const count = await addAudioFiles();
+      setStatusMessage(count + (count === 1 ? ' track in your library.' : ' tracks in your library.'));
     } catch (error) {
-      setStatusMessage(error.message || 'Could not rescan the music folder.');
+      setStatusMessage(error.message || 'Could not add audio files.');
     } finally {
       scanInProgress.current = false;
       setIsScanning(false);
@@ -232,8 +230,8 @@ export default function SettingsScreen() {
             <Text style={styles.helperText}>
               {Platform.OS === 'android'
                 ? musicFolderName
-                  ? 'Add songs to this folder, then tap Rescan.'
-                  : 'Choose your songs folder, then tap Rescan.'
+                  ? 'Choose this folder again to sync any newly added songs automatically.'
+                  : 'Tap Use this folder and allow access. Songs sync automatically.'
                 : 'Supported formats: MP3, M4A, WAV, AAC, OGG, and FLAC.'}
             </Text>
             <Text style={styles.helperText}>Songs are copied into the app. Album tags group them into albums.</Text>
@@ -245,18 +243,18 @@ export default function SettingsScreen() {
                 style={({ pressed }) => [styles.secondaryButton, styles.folderButton, pressed && styles.pressed]}
               >
                 <Ionicons name="folder-open-outline" size={19} color={COLORS.cream} />
-                <Text style={styles.secondaryButtonText}>{musicFolderName ? 'Change music folder' : 'Choose music folder'}</Text>
+                <Text style={styles.secondaryButtonText}>{isScanning ? 'Selecting / syncing music...' : musicFolderName ? 'Choose / sync music folder' : 'Choose music folder'}</Text>
               </Pressable>
             ) : null}
-            <Pressable
+            {Platform.OS !== 'android' ? <Pressable
               accessibilityRole="button"
               disabled={isScanning}
-              onPress={rescanMusic}
+              onPress={addMusicFiles}
               style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
             >
               <Ionicons name={isScanning ? 'hourglass-outline' : 'refresh-outline'} size={19} color={COLORS.cream} />
-              <Text style={styles.secondaryButtonText}>{isScanning ? 'Scanning...' : Platform.OS === 'android' ? 'Rescan music folder' : 'Add audio files'}</Text>
-            </Pressable>
+              <Text style={styles.secondaryButtonText}>{isScanning ? 'Adding music...' : 'Add audio files'}</Text>
+            </Pressable> : null}
             <Text style={styles.helperText}>{tracks.length} playable {tracks.length === 1 ? 'track' : 'tracks'} in your library.</Text>
           </View>
 
