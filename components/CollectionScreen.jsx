@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, PanResponder, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+<<<<<<< HEAD
 import ThemeVideoBackground from './ThemeVideoBackground';
 import { useTheme } from '../themes/ThemeProvider';
+=======
+import { ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+<<<<<<< HEAD
+=======
+import christmasBackground from '../assets/christmas_bg4.png';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from './PlaybackContext';
 import SongArtwork from './SongArtwork';
 import { deleteUserAlbum, getUserAlbums, pickAlbumCover, saveUserAlbum } from './userAlbums';
@@ -29,11 +37,14 @@ export default function CollectionScreen() {
 }
 
 function CollectionContent({ initialAlbumId }) {
+<<<<<<< HEAD
   const { theme } = useTheme();
   const isHalloween = theme?.id === 'halloween';
   const isThemed = theme?.id !== 'christmas';
   const onVideo = isHalloween ? '#fff1dc' : isThemed ? theme.colors.cream : COLORS.ink;
   const onVideoMuted = isHalloween ? '#e9d8b2' : isThemed ? theme.colors.onSurfaceMuted : COLORS.muted;
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const [selectedAlbumId, setSelectedAlbumId] = useState(initialAlbumId);
   const [userAlbums, setUserAlbums] = useState([]);
@@ -230,9 +241,14 @@ function CollectionContent({ initialAlbumId }) {
   };
 
   return (
+<<<<<<< HEAD
     <View style={styles.background}>
       <StatusBar barStyle={isThemed ? 'light-content' : 'dark-content'} />
       <ThemeVideoBackground />
+=======
+    <ImageBackground source={christmasBackground} contentFit="cover" style={styles.background}>
+      <StatusBar barStyle="dark-content" />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <View style={styles.screen}>
         <View style={[styles.header, { paddingTop: insets.top + 42 }]}>
           <Pressable
@@ -245,11 +261,19 @@ function CollectionContent({ initialAlbumId }) {
             }}
             style={styles.backButton}
           >
+<<<<<<< HEAD
             <Ionicons name="chevron-back" size={25} color={onVideo} />
           </Pressable>
           <Text numberOfLines={1} style={[styles.heading, { color: onVideo }]}>{selectedAlbum?.title ?? (isCreating ? 'New album playlist' : 'Your Albums')}</Text>
           {selectedAlbum?.isUserAlbum ? (
             <Pressable accessibilityRole="button" accessibilityLabel="Edit album playlist" onPress={() => editAlbum(selectedAlbum)} style={[styles.headerAction, isThemed && { backgroundColor: theme.colors.primary }]}>
+=======
+            <Ionicons name="chevron-back" size={25} color={COLORS.ink} />
+          </Pressable>
+          <Text numberOfLines={1} style={styles.heading}>{selectedAlbum?.title ?? (isCreating ? 'New album playlist' : 'Your Albums')}</Text>
+          {selectedAlbum?.isUserAlbum ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="Edit album playlist" onPress={() => editAlbum(selectedAlbum)} style={styles.headerAction}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <Ionicons name="create-outline" size={21} color={COLORS.cream} />
             </Pressable>
           ) : !selectedAlbum && !isCreating ? (
@@ -257,7 +281,11 @@ function CollectionContent({ initialAlbumId }) {
               accessibilityRole="button"
               accessibilityLabel="Create album playlist"
               onPress={() => setIsCreating(true)}
+<<<<<<< HEAD
               style={[styles.headerAction, isThemed && { backgroundColor: theme.colors.primary }]}
+=======
+              style={styles.headerAction}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             >
               <Ionicons name="add" size={24} color={COLORS.cream} />
             </Pressable>
@@ -283,6 +311,7 @@ function CollectionContent({ initialAlbumId }) {
                 <Text style={styles.formLabel}>{coverUri ? 'Change album cover' : 'Upload album cover'}</Text>
                 <Text style={styles.formHint}>Choose an image from your device</Text>
               </View>
+<<<<<<< HEAD
               <Ionicons name="image-outline" size={21} color={isThemed ? theme.colors.primary : COLORS.green} />
             </Pressable>
 
@@ -291,6 +320,16 @@ function CollectionContent({ initialAlbumId }) {
             <View style={styles.songPickerHeading}>
               <Text style={[styles.formLabel, { color: onVideo }]}>Choose songs</Text>
               <Text style={[styles.formHint, { color: onVideoMuted }]}>{selectedTrackIds.length} selected</Text>
+=======
+              <Ionicons name="image-outline" size={21} color={COLORS.green} />
+            </Pressable>
+
+            <Text style={styles.formLabel}>Album name</Text>
+            <TextInput value={albumTitle} onChangeText={setAlbumTitle} placeholder="Give your album a name" placeholderTextColor={COLORS.muted} style={styles.textInput} />
+            <View style={styles.songPickerHeading}>
+              <Text style={styles.formLabel}>Choose songs</Text>
+              <Text style={styles.formHint}>{selectedTrackIds.length} selected</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             </View>
             {tracks.map((track) => {
               const selected = selectedTrackIds.includes(track.id);
@@ -306,15 +345,25 @@ function CollectionContent({ initialAlbumId }) {
                 >
                   <SongArtwork source={track.artwork} style={styles.trackArt} iconSize={18} />
                   <View style={styles.details}>
+<<<<<<< HEAD
                     <Text numberOfLines={1} style={[styles.title, isThemed && { color: theme.colors.cream }]}>{track.title}</Text>
                     <Text numberOfLines={1} style={[styles.artist, isThemed && { color: theme.colors.onSurfaceMuted }]}>{track.artist}</Text>
+=======
+                    <Text numberOfLines={1} style={styles.title}>{track.title}</Text>
+                    <Text numberOfLines={1} style={styles.artist}>{track.artist}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   </View>
                   <Ionicons name={selected ? 'checkbox' : 'square-outline'} size={22} color={selected ? COLORS.green : COLORS.muted} />
                 </Pressable>
               );
             })}
+<<<<<<< HEAD
             {formMessage ? <Text accessibilityRole="alert" style={[styles.formMessage, isThemed && { color: theme.colors.accent }]}>{formMessage}</Text> : null}
             <Pressable accessibilityRole="button" onPress={createAlbum} style={[styles.saveAlbumButton, isThemed && { backgroundColor: theme.colors.primary }]}>
+=======
+            {formMessage ? <Text accessibilityRole="alert" style={styles.formMessage}>{formMessage}</Text> : null}
+            <Pressable accessibilityRole="button" onPress={createAlbum} style={styles.saveAlbumButton}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <Text style={styles.saveAlbumLabel}>{editingAlbumId ? 'Save changes' : 'Create album playlist'}</Text>
             </Pressable>
           </ScrollView>
@@ -326,8 +375,13 @@ function CollectionContent({ initialAlbumId }) {
             scrollEnabled={!isDraggingTrack}
           >
             <SongArtwork source={selectedAlbum.artworkUri ? { uri: selectedAlbum.artworkUri } : selectedAlbum.artwork ?? null} style={styles.detailCover} iconSize={76} />
+<<<<<<< HEAD
             <Text numberOfLines={2} style={[styles.detailTitle, { color: onVideo }]}>{selectedAlbum.title}</Text>
             <Text style={[styles.albumMeta, { color: onVideoMuted }]}>{selectedAlbum.isUserAlbum ? 'Playlist' : (selectedAlbum.artist || 'Album')} · {albumDetails(selectedAlbumTracks)}</Text>
+=======
+            <Text numberOfLines={2} style={styles.detailTitle}>{selectedAlbum.title}</Text>
+            <Text style={styles.albumMeta}>{selectedAlbum.isUserAlbum ? 'Playlist' : (selectedAlbum.artist || 'Album')} · {albumDetails(selectedAlbumTracks)}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
             <View style={styles.albumActions}>
               <Pressable
@@ -336,10 +390,17 @@ function CollectionContent({ initialAlbumId }) {
                 onPress={() => toggleAlbumFavorite(selectedAlbum.id)}
                 style={styles.likeButton}
               >
+<<<<<<< HEAD
                 <Ionicons name={isAlbumFavorite(selectedAlbum.id) ? 'heart' : 'heart-outline'} size={27} color={isAlbumFavorite(selectedAlbum.id) ? (isThemed ? theme.colors.accent : COLORS.red) : isThemed ? theme.colors.cream : COLORS.muted} />
               </Pressable>
               <Pressable accessibilityRole="button" accessibilityLabel={`Shuffle ${selectedAlbum.title}`} onPress={shuffleAlbum} style={styles.shuffleButton}>
                 <Ionicons name="shuffle" size={25} color={isThemed ? theme.colors.primary : COLORS.green} />
+=======
+                <Ionicons name={isAlbumFavorite(selectedAlbum.id) ? 'heart' : 'heart-outline'} size={27} color={isAlbumFavorite(selectedAlbum.id) ? COLORS.red : COLORS.muted} />
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Shuffle ${selectedAlbum.title}`} onPress={shuffleAlbum} style={styles.shuffleButton}>
+                <Ionicons name="shuffle" size={25} color={COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -347,7 +408,11 @@ function CollectionContent({ initialAlbumId }) {
                 onPress={confirmDeleteAlbum}
                 style={styles.deleteActionButton}
               >
+<<<<<<< HEAD
                 <Ionicons name="trash-outline" size={24} color={isThemed ? theme.colors.accent : COLORS.red} />
+=======
+                <Ionicons name="trash-outline" size={24} color={COLORS.red} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -365,7 +430,11 @@ function CollectionContent({ initialAlbumId }) {
                     router.push('/Player');
                   }
                 }}
+<<<<<<< HEAD
                 style={[styles.albumPlayButton, isThemed && { backgroundColor: theme.colors.primary }]}
+=======
+                style={styles.albumPlayButton}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               >
                 <Ionicons name="play" size={30} color={COLORS.cream} />
               </Pressable>
@@ -374,7 +443,10 @@ function CollectionContent({ initialAlbumId }) {
             <SortableTrackList
               tracks={selectedAlbumTracks}
               isReorderable={Boolean(selectedAlbum.isUserAlbum) && selectedAlbumTracks.length > 1}
+<<<<<<< HEAD
               emptyColor={isHalloween ? '#e9d8b2' : COLORS.muted}
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               onPlayTrack={(track) => {
                 playQueue(selectedAlbumTracks, track, {
                   type: 'album',
@@ -387,10 +459,16 @@ function CollectionContent({ initialAlbumId }) {
               }}
               onReorder={dropAlbumTrack}
               onDragStateChange={setIsDraggingTrack}
+<<<<<<< HEAD
               theme={theme}
             />
             <Pressable accessibilityRole="button" onPress={confirmDeleteAlbum} style={styles.deleteAlbumButton}>
               <Ionicons name="trash-outline" size={18} color={isThemed ? theme.colors.accent : COLORS.red} />
+=======
+            />
+            <Pressable accessibilityRole="button" onPress={confirmDeleteAlbum} style={styles.deleteAlbumButton}>
+              <Ionicons name="trash-outline" size={18} color={COLORS.red} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <Text style={styles.deleteAlbumLabel}>
                 {selectedAlbum.isUserAlbum ? 'Delete album playlist' : 'Remove album from list'}
               </Text>
@@ -401,7 +479,11 @@ function CollectionContent({ initialAlbumId }) {
             contentContainerStyle={[styles.list, { paddingBottom: scrollBottomPadding }]}
             showsVerticalScrollIndicator={false}
           >
+<<<<<<< HEAD
             <Text style={[styles.explainer, { color: onVideoMuted }]}>Browse albums from your music library or create custom album playlists.</Text>
+=======
+            <Text style={styles.explainer}>Browse albums from your music library or create custom album playlists.</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             {allAlbums.length ? allAlbums.map((album) => {
               const albumTracks = album.tracks ?? (album.trackIds ? album.trackIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) : []);
               const artSource = album.artworkUri ? { uri: album.artworkUri } : album.artwork ?? null;
@@ -418,6 +500,7 @@ function CollectionContent({ initialAlbumId }) {
                 >
                   <SongArtwork source={artSource} style={styles.art} iconSize={25} />
                   <View style={styles.details}>
+<<<<<<< HEAD
                     <Text numberOfLines={1} style={[styles.title, isThemed && { color: theme.colors.cream }]}>{album.title}</Text>
                     <Text style={[styles.meta, isThemed && { color: theme.colors.onSurfaceMuted }]}>{metaLabel}</Text>
                   </View>
@@ -446,6 +529,35 @@ function NavItem({ label, icon, route, selected = false, theme }) {
     <Pressable accessibilityRole="button" onPress={() => router.replace(route)} style={styles.navItem}>
       <Ionicons name={selected ? icon : `${icon}-outline`} size={21} color={isThemed ? (selected ? theme.colors.cream : theme.colors.onSurfaceMuted) : selected ? COLORS.red : COLORS.muted} />
       <Text style={[styles.navLabel, selected && styles.selectedNavLabel, isThemed && { color: selected ? theme.colors.cream : theme.colors.onSurfaceMuted }]}>{label}</Text>
+=======
+                    <Text numberOfLines={1} style={styles.title}>{album.title}</Text>
+                    <Text style={styles.meta}>{metaLabel}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={19} color={COLORS.green} />
+                </Pressable>
+              );
+            }) : null}
+            {!allAlbums.length ? <Text style={styles.emptyMessage}>No albums found. Add songs in Settings or tap + to create an album playlist.</Text> : null}
+          </ScrollView>
+        )}
+
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+          <NavItem label="Home" icon="home" route="/Music" />
+          <NavItem label="Search" icon="search" route="/Search" />
+          <NavItem label="Your Library" icon="library" route="/Library" selected={Boolean(selectedAlbum)} />
+          <NavItem label="Settings" icon="settings" route="/Settings" />
+        </View>
+      </View>
+    </ImageBackground>
+  );
+}
+
+function NavItem({ label, icon, route, selected = false }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={() => router.replace(route)} style={styles.navItem}>
+      <Ionicons name={selected ? icon : `${icon}-outline`} size={21} color={selected ? COLORS.red : COLORS.muted} />
+      <Text style={[styles.navLabel, selected && styles.selectedNavLabel]}>{label}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     </Pressable>
   );
 }
@@ -455,7 +567,11 @@ function albumDetails(tracks) {
   return `${count} song${count === 1 ? '' : 's'}`;
 }
 
+<<<<<<< HEAD
 const COLORS = { green: '#174d38', red: '#a62224', ink: '#28251f', artist: '#5c554a', muted: '#817764', cream: '#fff8e9' };
+=======
+const COLORS = { green: '#174d38', red: '#a62224', ink: '#28251f', muted: '#817764', cream: '#fff8e9' };
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 const TRACK_ROW_HEIGHT = 66;
 
 function SortableTrackList({
@@ -464,8 +580,11 @@ function SortableTrackList({
   onPlayTrack,
   onReorder,
   onDragStateChange,
+<<<<<<< HEAD
   emptyColor = COLORS.muted,
   theme,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 }) {
   const [activeId, setActiveId] = useState(null);
   const [activeTranslateY] = useState(() => new Animated.Value(0));
@@ -615,8 +734,13 @@ function SortableTrackList({
   if (!tracks.length) {
     return (
       <View style={styles.emptyTrackList}>
+<<<<<<< HEAD
         <Ionicons name="musical-notes-outline" size={28} color={emptyColor} />
         <Text style={[styles.emptyTrackText, { color: emptyColor }]}>No songs in this album.</Text>
+=======
+        <Ionicons name="musical-notes-outline" size={28} color={COLORS.muted} />
+        <Text style={styles.emptyTrackText}>No songs in this album.</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       </View>
     );
   }
@@ -649,7 +773,10 @@ function SortableTrackList({
 
 function AlbumTrackRow({
   track,
+<<<<<<< HEAD
   theme,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   index,
   isReorderable,
   isActive,
@@ -718,12 +845,20 @@ function AlbumTrackRow({
         >
           <View style={styles.dragDotsColumn}>
             {[0, 1, 2].map((dot) => (
+<<<<<<< HEAD
               <View key={dot} style={[styles.dragDot, isActive && styles.dragDotActive, theme?.id !== 'christmas' && isActive && { backgroundColor: theme.colors.accent }]} />
+=======
+              <View key={dot} style={[styles.dragDot, isActive && styles.dragDotActive]} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             ))}
           </View>
           <View style={styles.dragDotsColumn}>
             {[0, 1, 2].map((dot) => (
+<<<<<<< HEAD
               <View key={dot} style={[styles.dragDot, isActive && styles.dragDotActive, theme?.id !== 'christmas' && isActive && { backgroundColor: theme.colors.accent }]} />
+=======
+              <View key={dot} style={[styles.dragDot, isActive && styles.dragDotActive]} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             ))}
           </View>
         </View>
@@ -745,7 +880,11 @@ const styles = StyleSheet.create({
   art: { width: 60, height: 60, borderRadius: 8 },
   details: { flex: 1, minWidth: 0 },
   title: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 14 },
+<<<<<<< HEAD
   artist: { color: COLORS.artist, fontFamily: 'NunitoSemiBold', fontSize: 12 },
+=======
+  artist: { color: '#5c554a', fontFamily: 'NunitoSemiBold', fontSize: 12 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   meta: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 11 },
   detailScroll: { flex: 1 },
   detailContent: { paddingHorizontal: 22, paddingTop: 10 },
@@ -797,8 +936,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffdf6',
     borderRadius: 10,
     borderWidth: 1.5,
+<<<<<<< HEAD
     borderColor: 'rgba(36, 18, 53, 0.45)',
     shadowColor: '#241235',
+=======
+    borderColor: 'rgba(23, 77, 56, 0.45)',
+    shadowColor: '#174d38',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

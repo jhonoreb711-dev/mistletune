@@ -8,12 +8,21 @@ import {
   TextInput,
   View,
 } from 'react-native';
+<<<<<<< HEAD
 import ThemeImageBackground from './ThemeImageBackground';
+=======
+import { ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+<<<<<<< HEAD
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
+=======
+import christmasSearchBackground from '../assets/christmas_search_combined.gif';
+import christmasLibraryBackground from '../assets/Animated_Christmas_Music_Bookshelf.gif';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from './PlaybackContext';
 import SongArtwork from './SongArtwork';
 import { getUserAlbums } from './userAlbums';
@@ -33,8 +42,11 @@ export default function UtilityScreen({ page }) {
 }
 
 function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false }) {
+<<<<<<< HEAD
   const { styles, searchColors: SEARCH_COLORS } = useThemeStyles(createStyles, DEFAULT_COLORS, DEFAULT_SEARCH_COLORS);
   const { theme } = useTheme();
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState(initialQuery);
   const [searchCategory, setSearchCategory] = useState(searchCategories.includes(initialCategory) ? initialCategory : 'All');
@@ -125,7 +137,11 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
   }, [autoPlay, isSearch, playTrack, results]);
 
   return (
+<<<<<<< HEAD
     <ThemeImageBackground source={isSearch ? theme.assets.search : theme.assets.library} contentFit="cover" autoplay style={styles.background}>
+=======
+    <ImageBackground source={isSearch ? christmasSearchBackground : christmasLibraryBackground} contentFit="cover" autoplay style={styles.background}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <StatusBar barStyle="light-content" />
       <View style={styles.screen}>
         <View style={[styles.header, isSearch && styles.searchHeader, isLibrary && styles.libraryHeader, { paddingTop: insets.top + 42 }]}>
@@ -142,16 +158,27 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
 
         {isSearch ? (
           <>
+<<<<<<< HEAD
             <View style={[styles.searchBox, styles.christmasSearchBox, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderColor: theme.colors.surfaceBorder }]}>
               <Ionicons name="search-outline" size={20} color={theme.id === 'default' ? theme.colors.ink : SEARCH_COLORS.green} />
+=======
+            <View style={[styles.searchBox, styles.christmasSearchBox]}>
+              <Ionicons name="search-outline" size={20} color={SEARCH_COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <TextInput
               accessibilityLabel="Search songs and albums"
                 value={query}
                 onChangeText={setQuery}
                 placeholder="What do you want to listen to?"
+<<<<<<< HEAD
                 placeholderTextColor={theme.id === 'default' ? theme.colors.onSurfaceMuted : SEARCH_COLORS.muted}
                 returnKeyType="search"
                 style={[styles.searchInput, styles.christmasSearchInput, theme.id === 'default' && { color: theme.colors.ink }]}
+=======
+                placeholderTextColor={SEARCH_COLORS.muted}
+                returnKeyType="search"
+                style={[styles.searchInput, styles.christmasSearchInput]}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               />
               {query.length > 0 && (
                 <Pressable
@@ -160,7 +187,11 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
                   onPress={() => setQuery('')}
                   hitSlop={8}
                 >
+<<<<<<< HEAD
                   <Ionicons name="close-circle" size={19} color={theme.id === 'default' ? theme.colors.ink : SEARCH_COLORS.green} />
+=======
+                  <Ionicons name="close-circle" size={19} color={SEARCH_COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 </Pressable>
               )}
             </View>
@@ -200,13 +231,21 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
             ) : (
               <View style={[styles.browseCards, styles.christmasBrowseCards]}>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/Albums')} style={[styles.browseCard, styles.christmasBrowseCard, styles.albumBrowseCard]}>
+<<<<<<< HEAD
                   <Ionicons name={theme.icon} style={styles.cardSnowflakeTop} />
+=======
+                  <Text style={styles.cardSnowflakeTop}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   <Text style={[styles.browseCardTitle, styles.christmasBrowseCardTitle]}>Albums</Text>
                   <Text style={[styles.browseCardSubtitle, styles.christmasBrowseCardSubtitle]}>Browse by album</Text>
                   <Ionicons name="musical-notes" size={42} color={SEARCH_COLORS.gold} style={styles.browseIcon} />
                 </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/Library')} style={[styles.browseCard, styles.christmasBrowseCard, styles.songBrowseCard]}>
+<<<<<<< HEAD
                   <Ionicons name={theme.icon} style={styles.cardSnowflakeTop} />
+=======
+                  <Text style={styles.cardSnowflakeTop}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   <Text style={[styles.browseCardTitle, styles.christmasBrowseCardTitle]}>Songs</Text>
                   <Text style={[styles.browseCardSubtitle, styles.christmasBrowseCardSubtitle]}>Browse your music</Text>
                   <Ionicons name="headset" size={40} color={SEARCH_COLORS.gold} style={styles.browseIcon} />
@@ -256,12 +295,15 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
                   </Pressable>
                 </View>
               </View>
+<<<<<<< HEAD
               {!selectedLibraryAlbum && libraryCategory === 'Songs' && <Pressable accessibilityRole="button" accessibilityLabel="Open Benjie’s Playlist" onPress={() => router.push('/BenjiePlaylist')}
                 style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 46, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 10, borderRadius: 14, borderWidth: 1.5, borderColor: theme.colors.gold, backgroundColor: theme.colors.surfaceDeep, opacity: pressed ? 0.8 : 1 })}>
                 <Ionicons name="paw" size={19} color={theme.colors.gold} />
                 <Text style={{ flex: 1, color: theme.colors.cream, fontFamily: 'NunitoExtraBold', fontSize: 14 }}>Benjie’s Playlist</Text>
                 <Ionicons name="chevron-forward" size={19} color={theme.colors.gold} />
               </Pressable>}
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <ItemList items={visibleItems} bottomInset={insets.bottom} compact christmas emptyMessage={libraryCategory === 'Favorites' ? 'No favorites yet. Tap a heart on a song or album to save it here.' : 'No music here yet. Add songs in Settings.'} onSelect={(item) => {
                 if (item.track) { playTrack(item.track); router.push('/Player'); }
                 else if (item.album) router.push({ pathname: '/Albums', params: { albumId: item.album.routeId ?? item.id } });
@@ -271,19 +313,30 @@ function UtilityContent({ page, initialQuery, initialCategory, autoPlay = false 
           </>
         )}
 
+<<<<<<< HEAD
         <View style={[styles.bottomBar, styles.christmasBottomBar, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderTopColor: theme.colors.surfaceBorder }, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+=======
+        <View style={[styles.bottomBar, styles.christmasBottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           <NavItem label="Home" icon="home" selected={false} christmas onPress={() => router.replace('/Music')} />
           <NavItem label="Search" icon="search" selected={isSearch} christmas onPress={() => isSearch ? null : router.replace('/Search')} />
           <NavItem label="Your Library" icon="library" selected={isLibrary} christmas onPress={() => isSearch ? router.replace('/Library') : null} />
           <NavItem label="Settings" icon="settings" selected={false} christmas onPress={() => router.replace('/Settings')} />
         </View>
       </View>
+<<<<<<< HEAD
     </ThemeImageBackground>
+=======
+    </ImageBackground>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   );
 }
 
 function ItemList({ items, bottomInset, compact = false, christmas = false, onSelect, emptyMessage }) {
+<<<<<<< HEAD
   const { styles, colors: COLORS, searchColors: SEARCH_COLORS } = useThemeStyles(createStyles, DEFAULT_COLORS, DEFAULT_SEARCH_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   return (
     <ScrollView
       contentContainerStyle={[
@@ -312,7 +365,10 @@ function ItemList({ items, bottomInset, compact = false, christmas = false, onSe
 }
 
 function NavItem({ label, icon, selected, christmas = false, onPress }) {
+<<<<<<< HEAD
   const { styles, colors: COLORS, searchColors: SEARCH_COLORS } = useThemeStyles(createStyles, DEFAULT_COLORS, DEFAULT_SEARCH_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={styles.navItem}>
       <Ionicons
@@ -326,7 +382,11 @@ function NavItem({ label, icon, selected, christmas = false, onPress }) {
   );
 }
 
+<<<<<<< HEAD
 const DEFAULT_COLORS = {
+=======
+const COLORS = {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   green: '#174d38',
   red: '#a62224',
   ink: '#28251f',
@@ -334,7 +394,11 @@ const DEFAULT_COLORS = {
   cream: '#fff8e9',
 };
 
+<<<<<<< HEAD
 const DEFAULT_SEARCH_COLORS = {
+=======
+const SEARCH_COLORS = {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   green: '#0b3b25',
   red: '#a20d1b',
   gold: '#f5c96b',
@@ -342,7 +406,11 @@ const DEFAULT_SEARCH_COLORS = {
   muted: '#746c59',
 };
 
+<<<<<<< HEAD
 const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
+=======
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   background: { flex: 1, width: '100%' },
   screen: { flex: 1, backgroundColor: 'transparent' },
   header: {
@@ -356,7 +424,11 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   backButton: { width: 34, height: 36, justifyContent: 'center', marginRight: 4 },
   heading: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 22 },
   searchHeading: { color: SEARCH_COLORS.cream, fontSize: 25, textShadowColor: 'rgba(0,0,0,0.65)', textShadowRadius: 5 },
+<<<<<<< HEAD
   searchBackButton: { borderRadius: 18, backgroundColor: COLORS.tint },
+=======
+  searchBackButton: { borderRadius: 18, backgroundColor: 'rgba(4, 38, 24, 0.48)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   searchBox: {
     height: 48,
     flexDirection: 'row',
@@ -386,11 +458,19 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   libraryFilterScroll: { flexGrow: 0, flexShrink: 0, height: 126 },
   libraryFilters: { gap: 9, paddingHorizontal: 20, paddingBottom: 0 },
   libraryBookFilters: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 12 },
+<<<<<<< HEAD
   libraryBookCard: { width: 96, height: 104, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8, borderRadius: 15, borderWidth: 2, borderColor: SEARCH_COLORS.gold, backgroundColor: SEARCH_COLORS.red, shadowColor: SEARCH_COLORS.gold, shadowOpacity: 0.28, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   librarySongsBook: { backgroundColor: SEARCH_COLORS.green },
   libraryBookCardSelected: { backgroundColor: SEARCH_COLORS.green, borderColor: SEARCH_COLORS.cream, shadowOpacity: 0.7, shadowRadius: 11, elevation: 5, transform: [{ translateY: -3 }] },
   libraryBookIconFrame: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center', borderRadius: 11, borderWidth: 1, borderColor: SEARCH_COLORS.gold, backgroundColor: COLORS.tint },
   libraryBookIconFrameSelected: { borderColor: SEARCH_COLORS.cream, backgroundColor: COLORS.surfaceDeep },
+=======
+  libraryBookCard: { width: 96, height: 104, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8, borderRadius: 15, borderWidth: 2, borderColor: SEARCH_COLORS.gold, backgroundColor: '#8e1420', shadowColor: SEARCH_COLORS.gold, shadowOpacity: 0.28, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  librarySongsBook: { backgroundColor: '#0b452d' },
+  libraryBookCardSelected: { backgroundColor: '#0b452d', borderColor: '#ffdf82', shadowOpacity: 0.7, shadowRadius: 11, elevation: 5, transform: [{ translateY: -3 }] },
+  libraryBookIconFrame: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center', borderRadius: 11, borderWidth: 1, borderColor: 'rgba(245,201,107,0.7)', backgroundColor: 'rgba(23,6,5,0.22)' },
+  libraryBookIconFrameSelected: { borderColor: '#ffe7a3', backgroundColor: 'rgba(0,25,15,0.4)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   libraryBookLabel: { color: SEARCH_COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 13, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 3 },
   libraryBookRibbon: { position: 'absolute', bottom: -10, width: 16, height: 17, backgroundColor: SEARCH_COLORS.red, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
   filterButton: {
@@ -405,10 +485,17 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   filterButtonSelected: { backgroundColor: COLORS.green },
   filterLabel: { color: COLORS.ink, fontFamily: 'NunitoBold', fontSize: 12 },
   filterLabelSelected: { color: COLORS.cream },
+<<<<<<< HEAD
   christmasFilterButton: { width: 88, minWidth: 88, height: 104, gap: 8, paddingHorizontal: 7, borderRadius: 13, backgroundColor: SEARCH_COLORS.red, borderWidth: 2, borderColor: SEARCH_COLORS.gold, shadowColor: SEARCH_COLORS.gold, shadowOpacity: 0.28, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   christmasFilterButtonSelected: { backgroundColor: SEARCH_COLORS.green, borderColor: SEARCH_COLORS.cream, shadowOpacity: 0.7, shadowRadius: 10, elevation: 5, transform: [{ translateY: -3 }] },
   searchFilterIconFrame: { width: 48, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 10, borderWidth: 1, borderColor: SEARCH_COLORS.gold, backgroundColor: COLORS.tint },
   searchFilterIconFrameSelected: { borderColor: SEARCH_COLORS.cream, backgroundColor: COLORS.surfaceDeep },
+=======
+  christmasFilterButton: { width: 88, minWidth: 88, height: 104, gap: 8, paddingHorizontal: 7, borderRadius: 13, backgroundColor: '#8e1420', borderWidth: 2, borderColor: SEARCH_COLORS.gold, shadowColor: SEARCH_COLORS.gold, shadowOpacity: 0.28, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  christmasFilterButtonSelected: { backgroundColor: '#0b452d', borderColor: '#ffe8a5', shadowOpacity: 0.7, shadowRadius: 10, elevation: 5, transform: [{ translateY: -3 }] },
+  searchFilterIconFrame: { width: 48, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(245,201,107,0.72)', backgroundColor: 'rgba(23,6,5,0.22)' },
+  searchFilterIconFrameSelected: { borderColor: '#ffe7a3', backgroundColor: 'rgba(0,25,15,0.4)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   christmasFilterLabel: { color: SEARCH_COLORS.cream, fontSize: 12, fontFamily: 'NunitoExtraBold' },
   searchFilterRibbon: { position: 'absolute', bottom: -10, width: 16, height: 17, backgroundColor: SEARCH_COLORS.red, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
   sectionTitle: { marginHorizontal: 20, marginBottom: 10, color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 17 },
@@ -416,15 +503,25 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   librarySectionTitle: { marginTop: 0, marginBottom: 2 },
   librarySection: { flex: 1, minHeight: 0, marginTop: 8, paddingHorizontal: 18 },
   libraryShelfHeading: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 7 },
+<<<<<<< HEAD
   libraryShelfTitle: { flexShrink: 1, color: SEARCH_COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 19, paddingHorizontal: 13, paddingVertical: 6, borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, borderRadius: 13, backgroundColor: SEARCH_COLORS.green, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 4 },
   libraryActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   libraryActionButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 20, borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, backgroundColor: SEARCH_COLORS.green },
+=======
+  libraryShelfTitle: { flexShrink: 1, color: SEARCH_COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 19, paddingHorizontal: 13, paddingVertical: 6, borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, borderRadius: 13, backgroundColor: 'rgba(5,43,27,0.84)', textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 4 },
+  libraryActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  libraryActionButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 20, borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, backgroundColor: 'rgba(4,36,23,0.82)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   libraryList: { flex: 1 },
   itemList: { gap: 5, paddingHorizontal: 18, paddingTop: 1 },
   compactItemList: { gap: 2, paddingTop: 0 },
   itemRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 5, paddingVertical: 5 },
   compactItemRow: { minHeight: 56, gap: 10, paddingVertical: 3 },
+<<<<<<< HEAD
   itemArt: { width: 54, height: 54, borderRadius: 8, backgroundColor: SEARCH_COLORS.green },
+=======
+  itemArt: { width: 54, height: 54, borderRadius: 8, backgroundColor: '#d9c7a4' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   compactItemArt: { width: 46, height: 46 },
   itemDetails: { flex: 1, minWidth: 0 },
   itemTitle: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 14 },
@@ -434,8 +531,13 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   christmasBrowseCards: { gap: 12, paddingHorizontal: 18 },
   browseCard: { flex: 1, minHeight: 132, justifyContent: 'flex-end', overflow: 'hidden', padding: 14, borderRadius: 15 },
   christmasBrowseCard: { minHeight: 166, borderRadius: 19, borderWidth: 2, borderColor: SEARCH_COLORS.gold, shadowColor: SEARCH_COLORS.gold, shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+<<<<<<< HEAD
   albumBrowseCard: { backgroundColor: SEARCH_COLORS.red },
   songBrowseCard: { backgroundColor: SEARCH_COLORS.green },
+=======
+  albumBrowseCard: { backgroundColor: '#8d1520' },
+  songBrowseCard: { backgroundColor: '#0b452d' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   cardSnowflakeTop: { position: 'absolute', left: 10, top: 8, color: SEARCH_COLORS.cream, fontSize: 18, textShadowColor: SEARCH_COLORS.gold, textShadowRadius: 7 },
   musicCard: { backgroundColor: COLORS.green },
   browseCardTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 17 },
@@ -443,8 +545,13 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
   christmasBrowseCardTitle: { color: SEARCH_COLORS.cream, fontSize: 19, textShadowColor: 'rgba(0,0,0,0.48)', textShadowRadius: 4 },
   christmasBrowseCardSubtitle: { color: SEARCH_COLORS.cream, fontSize: 12 },
   browseIcon: { position: 'absolute', right: 11, top: 12, opacity: 0.82 },
+<<<<<<< HEAD
   christmasItemRow: { marginBottom: 6, minHeight: 70, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14, borderWidth: 1.25, borderColor: SEARCH_COLORS.gold, backgroundColor: SEARCH_COLORS.green },
   christmasItemArt: { borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, borderRadius: 10, backgroundColor: SEARCH_COLORS.green },
+=======
+  christmasItemRow: { marginBottom: 6, minHeight: 70, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 14, borderWidth: 1.25, borderColor: 'rgba(245,201,107,0.82)', backgroundColor: 'rgba(3,38,24,0.82)' },
+  christmasItemArt: { borderWidth: 1.5, borderColor: SEARCH_COLORS.gold, borderRadius: 10, backgroundColor: '#103d2a' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   christmasItemTitle: { color: SEARCH_COLORS.cream },
   christmasItemSubtitle: { color: SEARCH_COLORS.gold },
   bottomBar: {
@@ -461,7 +568,11 @@ const createStyles = (COLORS, SEARCH_COLORS) => StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(75, 59, 37, 0.2)',
   },
+<<<<<<< HEAD
   christmasBottomBar: { minHeight: 72, backgroundColor: SEARCH_COLORS.red, borderTopWidth: 1.5, borderTopColor: SEARCH_COLORS.gold },
+=======
+  christmasBottomBar: { minHeight: 72, backgroundColor: '#880b18', borderTopWidth: 1.5, borderTopColor: SEARCH_COLORS.gold },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   navItem: { flex: 1, minWidth: 0, alignItems: 'center', gap: 1 },
   navLabel: { color: COLORS.muted, fontFamily: 'NunitoSemiBold', fontSize: 10 },
   navLabelSelected: { color: COLORS.red, fontFamily: 'NunitoExtraBold' },

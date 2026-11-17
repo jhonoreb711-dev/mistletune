@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+<<<<<<< HEAD
 import { useTheme } from '../themes/ThemeProvider';
 
 export default function SongArtwork({ source, style, iconSize = 28, accessibilityLabel = 'Music artwork', contentFit = 'cover' }) {
@@ -8,6 +9,10 @@ export default function SongArtwork({ source, style, iconSize = 28, accessibilit
   const usesThemePalette = theme?.id !== 'christmas';
   const plainTheme = theme?.id === 'default';
 
+=======
+
+export default function SongArtwork({ source, style, iconSize = 28, accessibilityLabel = 'Music artwork', contentFit = 'cover' }) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   if (source) {
     return (
       <Image
@@ -22,6 +27,7 @@ export default function SongArtwork({ source, style, iconSize = 28, accessibilit
   }
 
   return (
+<<<<<<< HEAD
     <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={[styles.cover, usesThemePalette && { backgroundColor: theme.colors.surfaceRaised }, style]}>
       <View pointerEvents="none" style={[styles.glow, usesThemePalette && { backgroundColor: plainTheme ? `${theme.colors.primary}44` : theme.colors.accent }]} />
       <View pointerEvents="none" style={[styles.orbit, usesThemePalette && { borderColor: theme.colors.line }]} />
@@ -32,6 +38,18 @@ export default function SongArtwork({ source, style, iconSize = 28, accessibilit
       <View pointerEvents="none" style={[styles.snow, styles.snowTwo, usesThemePalette && { backgroundColor: theme.colors.gold }]} />
       <View pointerEvents="none" style={[styles.snow, styles.snowThree, usesThemePalette && { backgroundColor: theme.colors.gold }]} />
       <View pointerEvents="none" style={[styles.snow, styles.snowFour, usesThemePalette && { backgroundColor: theme.colors.gold }]} />
+=======
+    <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={[styles.cover, style]}>
+      <View pointerEvents="none" style={styles.glow} />
+      <View pointerEvents="none" style={styles.orbit} />
+      <View style={styles.noteCircle}>
+        <Ionicons name="musical-notes" size={iconSize} color="#fff4d6" />
+      </View>
+      <View pointerEvents="none" style={[styles.snow, styles.snowOne]} />
+      <View pointerEvents="none" style={[styles.snow, styles.snowTwo]} />
+      <View pointerEvents="none" style={[styles.snow, styles.snowThree]} />
+      <View pointerEvents="none" style={[styles.snow, styles.snowFour]} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     </View>
   );
 }

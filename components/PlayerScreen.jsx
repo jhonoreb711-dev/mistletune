@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
+=======
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { ImageBackground } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useIsFocused } from 'expo-router';
@@ -11,22 +16,32 @@ import SongArtwork from './SongArtwork';
 import SongCoverDialog from './SongCoverDialog';
 import LyricsScreen from './LyricsScreen';
 import HighwayPlayerArtwork from './HighwayPlayerArtwork';
+<<<<<<< HEAD
 import SpinningRecordArtwork from './SpinningRecordArtwork';
 import PlayerTitleBanner from './PlayerTitleBanner';
 import PlayerSoundWave from './PlayerSoundWave';
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
+=======
+import christmasBackground from '../assets/christmas_bg.png';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
 const formatTime = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 
 export default function PlayerScreen() {
+<<<<<<< HEAD
   const { theme } = useTheme();
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const {
     currentTrack,
+<<<<<<< HEAD
     player,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     playing,
     currentTime,
     duration,
@@ -40,9 +55,12 @@ export default function PlayerScreen() {
     toggleLoopMode,
     editTrackArtwork,
     clearTrackArtwork,
+<<<<<<< HEAD
     openQueueSheet,
     queueTracks,
     queueKind,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   } = usePlayback();
   const { isTrackFavorite, toggleTrackFavorite } = useFavorites();
   const [trackWidth, setTrackWidth] = useState(0);
@@ -57,6 +75,7 @@ export default function PlayerScreen() {
   const scrubbingTimeRef = useRef(null);
   const feedbackTimerRef = useRef(null);
   const track = currentTrack;
+<<<<<<< HEAD
   const [swipeX] = useState(() => new Animated.Value(0));
   const [swipeOpacity] = useState(() => new Animated.Value(1));
   const swipeResponder = useMemo(() => PanResponder.create({
@@ -84,6 +103,12 @@ export default function PlayerScreen() {
   const progress = duration ? Math.max(0, Math.min(displayedTime / duration, 1)) : 0;
   const pageWidth = Math.max(1, width - 16 - insets.left - insets.right);
   const coverSize = Math.max(96, Math.min(pageWidth, (height - insets.top - insets.bottom) * 0.4, 300));
+=======
+  const displayedTime = scrubbingTime ?? currentTime;
+  const progress = duration ? Math.max(0, Math.min(displayedTime / duration, 1)) : 0;
+  const pageWidth = Math.max(1, width - 16 - insets.left - insets.right);
+  const coverSize = Math.max(96, Math.min(pageWidth, (height - insets.top - insets.bottom) * 0.35, 280));
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   useEffect(() => {
     artworkPagerRef.current?.scrollTo({ x: playerView * pageWidth, animated: false });
@@ -170,7 +195,11 @@ export default function PlayerScreen() {
     <>
     {lyricsVisible && <LyricsScreen onClose={() => setLyricsVisible(false)} />}
     <SongCoverDialog track={coverTarget} busy={coverBusy} error={coverError} onClose={() => setCoverTarget(null)} onChange={() => updateCover(false)} onRemove={() => updateCover(true)} />
+<<<<<<< HEAD
     <ImageBackground source={queueKind === 'benjie-playlist' ? require('../assets/homevideo/benjie_bg.gif') : theme.id === 'default' ? null : theme.assets.player} autoplay contentFit="cover" style={[styles.background, theme.id === 'default' && { backgroundColor: theme.colors.primary }]}>
+=======
+    <ImageBackground source={christmasBackground} contentFit="cover" style={styles.background}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <View style={styles.overlay} />
       <View style={[styles.screen, { paddingLeft: 8 + insets.left, paddingRight: 8 + insets.right, paddingTop: insets.top + 20, paddingBottom: Math.max(insets.bottom, 8) + 8 }]}>
         <View style={styles.topBar}>
@@ -178,12 +207,18 @@ export default function PlayerScreen() {
             <Ionicons name="chevron-down" size={28} color="white" />
           </Pressable>
           <Text style={styles.nowPlaying}>NOW PLAYING</Text>
+<<<<<<< HEAD
           <Pressable accessibilityRole="button" accessibilityLabel={`Show play queue, ${queueTracks.length} ${queueTracks.length === 1 ? 'song' : 'songs'}`} onPress={openQueueSheet} hitSlop={12} style={styles.queueButton}>
             <Ionicons name="list" size={26} color="white" />
             {queueTracks.length > 0 && <View style={styles.queueBadge}><Text style={styles.queueBadgeText}>{queueTracks.length > 99 ? '99+' : queueTracks.length}</Text></View>}
           </Pressable>
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.playerContent, { gap: height < 700 ? 4 : 6 }]} showsVerticalScrollIndicator={false}>
+=======
+          <View style={styles.topBarSpacer} />
+        </View>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.playerContent, { gap: height < 700 ? 10 : 16 }]} showsVerticalScrollIndicator={false}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           <ScrollView
             ref={artworkPagerRef}
             horizontal
@@ -191,9 +226,15 @@ export default function PlayerScreen() {
             directionalLockEnabled
             showsHorizontalScrollIndicator={false}
             style={{ width: pageWidth, height: coverSize, flexGrow: 0, flexShrink: 0 }}
+<<<<<<< HEAD
             onMomentumScrollEnd={(event) => setPlayerView(Math.max(0, Math.min(2, Math.round(event.nativeEvent.contentOffset.x / pageWidth))))}
           >
             {[0, 1, 2].map((index) => (
+=======
+            onMomentumScrollEnd={(event) => setPlayerView(Math.max(0, Math.min(1, Math.round(event.nativeEvent.contentOffset.x / pageWidth))))}
+          >
+            {[0, 1].map((index) => (
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <View key={index} style={{ width: pageWidth, height: coverSize, alignItems: 'center', justifyContent: 'center' }}>
                 {index === 0 ? <Pressable
                   accessibilityRole="button"
@@ -204,13 +245,21 @@ export default function PlayerScreen() {
                   style={{ width: index === 0 ? coverSize : pageWidth, height: coverSize, alignItems: 'center', justifyContent: 'center' }}
                 >
                   <SongArtwork source={track?.artwork} contentFit="contain" iconSize={coverSize * 0.4} style={[styles.cover, { width: coverSize, height: coverSize }]} />
+<<<<<<< HEAD
                 </Pressable> : index === 2 ? <SpinningRecordArtwork width={pageWidth} height={coverSize} active={playing && playerView === 2 && isFocused} artwork={track?.artwork} onEditCover={editCover} editable={Boolean(track)} /> : <HighwayPlayerArtwork width={pageWidth} height={coverSize} active={playing && playerView === 1 && isFocused} artwork={track?.artwork} onEditCover={editCover} editable={Boolean(track)} />}
+=======
+                </Pressable> : <HighwayPlayerArtwork width={pageWidth} height={coverSize} active={playing && playerView === 1 && isFocused} artwork={track?.artwork} onEditCover={editCover} editable={Boolean(track)} />}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </View>
             ))}
           </ScrollView>
           <View style={styles.playerOptions}>
             <View style={styles.viewSelector}>
+<<<<<<< HEAD
             {['Classic', 'CD Highway', 'CD Spin'].map((label, index) => (
+=======
+            {['Classic', 'CD Highway'].map((label, index) => (
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <Pressable key={label} accessibilityRole="button" accessibilityLabel={`Show ${label} player`} accessibilityState={{ selected: playerView === index }} onPress={() => changePlayerView(index)} style={[styles.viewOption, playerView === index && styles.viewOptionActive]}>
                 <View style={[styles.viewDot, playerView === index && styles.viewDotActive]} />
                 <Text style={[styles.viewLabel, playerView === index && styles.viewLabelActive]}>{label}</Text>
@@ -218,6 +267,7 @@ export default function PlayerScreen() {
             ))}
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel="Open offline lyrics" accessibilityState={{ disabled: !track }} disabled={!track} onPress={() => setLyricsVisible(true)} style={[styles.lyricsButton, !track && styles.lyricsButtonDisabled]}>
+<<<<<<< HEAD
               <Ionicons name="document-text-outline" size={18} color={COLORS.ember} />
               <Text style={styles.lyricsButtonText}>Lyrics</Text>
             </Pressable>
@@ -240,6 +290,16 @@ export default function PlayerScreen() {
             <View style={styles.trackText}>
               <PlayerTitleBanner key={track?.id || 'empty'} title={track?.title ?? 'Choose a song'} color={theme.colors.cream} active={isFocused} />
               <Text numberOfLines={1} style={styles.artist}>{track?.artist ?? ' '}</Text>
+=======
+              <Ionicons name="document-text-outline" size={18} color="#f4c86a" />
+              <Text style={styles.lyricsButtonText}>Lyrics</Text>
+            </Pressable>
+          </View>
+          <View style={styles.trackInfo}>
+            <View style={styles.trackText}>
+              <Text numberOfLines={2} style={styles.title}>{track?.title ?? 'Choose a song'}</Text>
+              <Text numberOfLines={2} style={styles.artist}>{track?.artist ?? ' '}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             </View>
             <Pressable
               accessibilityRole="button"
@@ -251,7 +311,10 @@ export default function PlayerScreen() {
               <Ionicons name={track && isTrackFavorite(track.id) ? 'heart' : 'heart-outline'} size={25} color={track && isTrackFavorite(track.id) ? '#d83a43' : 'white'} />
             </Pressable>
           </View>
+<<<<<<< HEAD
           </Animated.View>
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           <View>
             <View
               accessibilityRole="adjustable"
@@ -277,9 +340,16 @@ export default function PlayerScreen() {
               <Ionicons name={feedback.icon} size={15} color="#fff8e9" style={styles.feedbackIcon} />
               <Text style={styles.feedbackText}>{feedback.text}</Text>
             </View>
+<<<<<<< HEAD
           ) : null}
 
           <PlayerSoundWave key={track?.uri || track?.source?.uri || track?.source || track?.id || 'empty'} track={track} player={player} active={playing && isFocused} color={theme.colors.gold} accent={theme.colors.cream} />
+=======
+          ) : (
+            <View style={styles.feedbackSpacer} />
+          )}
+
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           <View style={styles.controls}>
             <Pressable
               accessibilityRole="button"
@@ -293,14 +363,22 @@ export default function PlayerScreen() {
               <Ionicons
                 name="shuffle"
                 size={24}
+<<<<<<< HEAD
                 color={!canShuffle ? 'rgba(255,255,255,0.38)' : shuffleEnabled ? COLORS.green : 'white'}
+=======
+                color={!canShuffle ? 'rgba(255,255,255,0.38)' : shuffleEnabled ? '#174d38' : 'white'}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               />
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Previous track" onPress={() => skip(-1)} hitSlop={10}>
               <Ionicons name="play-skip-back" size={28} color="white" />
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel={playing ? 'Pause' : 'Play'} onPress={togglePlayback} style={styles.playButton}>
+<<<<<<< HEAD
               <Ionicons name={playing ? 'pause' : 'play'} size={30} color={COLORS.green} />
+=======
+              <Ionicons name={playing ? 'pause' : 'play'} size={30} color="#174d38" />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Next track" onPress={() => skip(1)} hitSlop={10}>
               <Ionicons name="play-skip-forward" size={28} color="white" />
@@ -316,7 +394,11 @@ export default function PlayerScreen() {
               <Ionicons
                 name="repeat"
                 size={23}
+<<<<<<< HEAD
                 color={loopMode !== 'none' ? COLORS.green : 'rgba(255,255,255,0.72)'}
+=======
+                color={loopMode !== 'none' ? '#174d38' : 'rgba(255,255,255,0.72)'}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               />
               {loopMode === 'single' ? (
                 <View style={styles.repeatBadge}>
@@ -347,6 +429,7 @@ export default function PlayerScreen() {
   );
 }
 
+<<<<<<< HEAD
 const BASE_COLORS = {
   green: '#174d38',
   greenPanelAlt: '#12372b',
@@ -389,13 +472,51 @@ const createStyles = (colors) => StyleSheet.create({
   knob: { position: 'absolute', top: 8, width: 13, height: 13, borderWidth: 2, borderColor: colors.green, borderRadius: 7, marginLeft: -6.5, backgroundColor: '#fff', elevation: 3, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 3 },
   timeRow: { flexDirection: 'row', justifyContent: 'space-between' },
   time: { color: 'rgba(255,255,255,0.76)', fontFamily: 'NunitoSemiBold', fontSize: 11 },
+=======
+const styles = StyleSheet.create({
+  playerOptions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  lyricsButton: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 12, borderRadius: 23, backgroundColor: 'rgba(3,23,20,0.8)', borderWidth: 1, borderColor: 'rgba(244,200,106,0.45)' },
+  lyricsButtonDisabled: { opacity: 0.45 },
+  lyricsButtonText: { color: '#f4c86a', fontFamily: 'NunitoBold', fontSize: 11 },
+  viewSelector: { flexDirection: 'row', alignSelf: 'center', gap: 6, padding: 3, borderRadius: 22, backgroundColor: 'rgba(3,23,20,0.8)', borderWidth: 1, borderColor: 'rgba(244,200,106,0.3)' },
+  viewOption: { minHeight: 38, paddingHorizontal: 14, borderRadius: 19, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  viewOptionActive: { backgroundColor: '#fff8e9' },
+  viewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#baa878' },
+  viewDotActive: { backgroundColor: '#174d38' },
+  viewLabel: { color: '#e2d2ad', fontFamily: 'NunitoBold', fontSize: 11 },
+  viewLabelActive: { color: '#174d38' },
+  background: { flex: 1, backgroundColor: '#09261f' },
+  overlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(3, 23, 20, 0.40)' },
+  screen: { flex: 1, paddingHorizontal: 25 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 32 },
+  topBarSpacer: { width: 28 },
+  nowPlaying: { color: 'white', fontFamily: 'NunitoExtraBold', fontSize: 12, letterSpacing: 1.2 },
+  cover: { maxWidth: 300, aspectRatio: 1, borderRadius: 16, backgroundColor: '#12372b', alignSelf: 'center' },
+  coverButton: { maxWidth: 300, aspectRatio: 1, alignSelf: 'center' },
+  playerContent: { flexGrow: 1, paddingVertical: 16, justifyContent: 'center', gap: 16 },
+  trackInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  trackText: { flex: 1 },
+  title: { color: 'white', fontFamily: 'NunitoExtraBold', fontSize: 20 },
+  artist: { color: 'rgba(255,255,255,0.88)', fontFamily: 'NunitoSemiBold', fontSize: 12, marginTop: 1 },
+  progressTrack: { height: 28, justifyContent: 'center' },
+  progressRail: { position: 'absolute', top: 12, left: 0, right: 0, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.46)' },
+  progressFill: { position: 'absolute', top: 12, left: 0, height: 4, borderRadius: 2, backgroundColor: '#fff' },
+  knob: { position: 'absolute', top: 8, width: 13, height: 13, borderWidth: 2, borderColor: '#174d38', borderRadius: 7, marginLeft: -6.5, backgroundColor: '#fff', elevation: 3, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 3 },
+  timeRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  time: { color: 'rgba(255,255,255,0.76)', fontFamily: 'NunitoSemiBold', fontSize: 11 },
+  feedbackSpacer: { height: 28 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   feedbackToast: {
     height: 28,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
+<<<<<<< HEAD
     backgroundColor: colors.surfaceDeep,
+=======
+    backgroundColor: 'rgba(3, 23, 20, 0.92)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 1,
     borderColor: 'rgba(255, 248, 233, 0.28)',
     paddingHorizontal: 12,
@@ -418,7 +539,11 @@ const createStyles = (colors) => StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
+<<<<<<< HEAD
     backgroundColor: colors.green,
+=======
+    backgroundColor: '#174d38',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -429,6 +554,10 @@ const createStyles = (colors) => StyleSheet.create({
     lineHeight: 10,
   },
   playButton: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff8e9' },
+<<<<<<< HEAD
   device: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, alignSelf: 'center', marginTop: 'auto', marginBottom: 2, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.surfaceDeep },
+=======
+  device: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, alignSelf: 'center', marginTop: 'auto', marginBottom: 2, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: 'rgba(3, 23, 20, 0.72)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   deviceText: { color: 'white', fontFamily: 'NunitoExtraBold', fontSize: 11 },
 });

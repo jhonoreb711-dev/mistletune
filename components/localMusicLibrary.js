@@ -310,6 +310,7 @@ export async function scanMusicFolder(folderUri, libraryId) {
   return listImportedAudio(libraryId);
 }
 
+<<<<<<< HEAD
 export async function clearLocalLibrary(libraryId) {
   if (!libraryId) return;
   const directory = scopedDirectory(libraryId);
@@ -320,6 +321,8 @@ export async function clearLocalLibrary(libraryId) {
   }
 }
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 export async function listImportedAudio(libraryId) {
   const libraryDirectory = await ensureLocalLibrary(libraryId);
   if (!libraryDirectory) return [];

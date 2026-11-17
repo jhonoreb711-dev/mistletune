@@ -15,8 +15,13 @@ function fixture() {
     async deleteAsync(uri) { disk.delete(uri); },
     async moveAsync({ from, to }) { disk.set(to, disk.get(from)); disk.delete(from); },
   };
+<<<<<<< HEAD
   const factory = new Function('FileSystem', 'localAudioUri', `${source};return {lyricsCacheIdentity,readGeneratedLyrics,writeGeneratedLyrics,deleteGeneratedLyrics,validSegments};`);
   const cache = factory(FileSystem, (uri) => uri);
+=======
+  const factory = new Function('FileSystem', 'localAudioUri', 'bundledWhisper', `${source};return {lyricsCacheIdentity,readGeneratedLyrics,writeGeneratedLyrics,deleteGeneratedLyrics,validSegments};`);
+  const cache = factory(FileSystem, (uri) => uri, { version: 'test-model' });
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   return { disk, track, cache, modify() { modified++; } };
 }
 test('persistent JSON roundtrip includes end times and isolates library/model/file identity', async () => {
@@ -42,6 +47,7 @@ test('empty instrumentals are cached; corrupt or overlapping transcripts are rej
   await cache.deleteGeneratedLyrics(track, 'library');
   assert.equal(disk.size, 0);
 });
+<<<<<<< HEAD
 
 test('legacy generated timing is rejected so a rescan regenerates it', async () => {
   const { cache, track, disk } = fixture();
@@ -52,3 +58,5 @@ test('legacy generated timing is rejected so a rescan regenerates it', async () 
   disk.set(path, JSON.stringify({ ...saved, schema: 2 }));
   assert.equal(await cache.readGeneratedLyrics(track, 'library'), null);
 });
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

@@ -4,11 +4,14 @@
     "appVersionSource": "local"
   },
   "build": {
+<<<<<<< HEAD
     "preview": {
       "android": {
         "buildType": "apk"
       }
     },
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     "production": {
       "channel": "production",
       "android": {

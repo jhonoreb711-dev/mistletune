@@ -11,6 +11,7 @@ import {
   View,
 
 } from 'react-native';
+<<<<<<< HEAD
 import { Image } from 'expo-image';
 import ThemeImageBackground from '../components/ThemeImageBackground';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,16 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
+=======
+import { Image, ImageBackground } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect, useIsFocused } from 'expo-router';
+import { VideoView } from 'expo-video';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import christmasBackground from '../assets/christmas_twinkle_loop.gif';
+import benjieHat from '../assets/Benjie_hat.png';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from '../components/PlaybackContext';
 import SongArtwork from '../components/SongArtwork';
 import { buildAlbums } from '../components/albumLibrary';
@@ -36,6 +47,7 @@ const categories = [
   { label: 'My Albums', icon: 'albums' },
   { label: 'Podcast', icon: 'videocam' },
 ];
+<<<<<<< HEAD
 // Match the homepage category tiles in every theme.
 const HOME_CARD_WIDTH = 96;
 const HOME_CARD_HEIGHT = 104;
@@ -56,6 +68,16 @@ function HomeVideo({ player, playing }) {
       float.setValue(0);
       return undefined;
     }
+=======
+const ALPHABET_LETTERS = ['All', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), '#'];
+let savedHomeVideoTime = 0;
+
+function HomeVideo({ player, playing, currentTrack }) {
+  const { homeVideoName, isCustomHomeVideo, changeHomeVideo, resetHomeVideo, isSpeechActive } = usePlayback();
+  const [float] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(float, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
@@ -64,21 +86,38 @@ function HomeVideo({ player, playing }) {
     );
     loop.start();
     return () => loop.stop();
+<<<<<<< HEAD
   }, [float, isFocused, reducedMotion, theme.id]);
+=======
+  }, [float]);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   const benjieY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
   const benjieTilt = float.interpolate({ inputRange: [0, 1], outputRange: ['-1.5deg', '0.2deg'] });
 
+<<<<<<< HEAD
   const [controlsVisible, setControlsVisible] = useState(false);
   const [controlsOpacity] = useState(() => new Animated.Value(0));
   const controlsTimer = useRef(null);
   const [videoTime, setVideoTime] = useState(() => player.currentTime || 0);
   const [videoDuration, setVideoDuration] = useState(() => Number.isFinite(player.duration) ? player.duration : 0);
+=======
+  const isFocused = useIsFocused();
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const [controlsOpacity] = useState(() => new Animated.Value(0));
+  const controlsTimer = useRef(null);
+  const [videoTime, setVideoTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [progressWidth, setProgressWidth] = useState(0);
 
   useEffect(() => {
     const timeSubscription = player.addListener('timeUpdate', ({ currentTime }) => {
       setVideoTime(currentTime);
+<<<<<<< HEAD
+=======
+      savedHomeVideoTime = currentTime;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     });
     const sourceSubscription = player.addListener('sourceLoad', ({ duration }) => {
       setVideoDuration(Number.isFinite(duration) ? duration : 0);
@@ -96,6 +135,7 @@ function HomeVideo({ player, playing }) {
     Reflect.set(player, 'timeUpdateEventInterval', 0.5);
   }, [player]);
 
+<<<<<<< HEAD
   // The provider owns the player, so its position already survives navigation.
   // A source revision also catches two picked videos with the same filename.
   useEffect(() => {
@@ -114,6 +154,59 @@ function HomeVideo({ player, playing }) {
   const handleChangeHomeVideo = async () => {
     try {
       await changeHomeVideo();
+=======
+  const lastVideoNameRef = useRef(homeVideoName);
+  useEffect(() => {
+    if (lastVideoNameRef.current !== homeVideoName) {
+      lastVideoNameRef.current = homeVideoName;
+      savedHomeVideoTime = 0;
+      setVideoTime(0);
+      try {
+        Reflect.set(player, 'currentTime', 0);
+      } catch {}
+    }
+  }, [homeVideoName, player]);
+
+  useEffect(() => () => clearTimeout(controlsTimer.current), []);
+
+  useFocusEffect(useCallback(() => {
+    Reflect.set(player, 'loop', true);
+    if (savedHomeVideoTime > 0) {
+      const maxTime = Number.isFinite(player.duration) && player.duration > 0
+        ? Math.max(0, player.duration - 0.1)
+        : savedHomeVideoTime;
+      const resumeAt = Math.min(savedHomeVideoTime, maxTime);
+      Reflect.set(player, 'currentTime', resumeAt);
+      setVideoTime(resumeAt);
+    }
+    if (playing || isSpeechActive) {
+      player.pause();
+    } else {
+      player.play();
+    }
+    return () => {
+      savedHomeVideoTime = player.currentTime || savedHomeVideoTime;
+      player.pause();
+    };
+  }, [player, playing, isSpeechActive]));
+
+  useEffect(() => {
+    if (!isFocused || playing || isSpeechActive) {
+      savedHomeVideoTime = player.currentTime || savedHomeVideoTime;
+      player.pause();
+    } else {
+      player.play();
+    }
+  }, [isFocused, playing, isSpeechActive, player]);
+
+  const handleChangeHomeVideo = async () => {
+    try {
+      const saved = await changeHomeVideo();
+      if (saved) {
+        savedHomeVideoTime = 0;
+        player.play();
+      }
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     } catch (err) {
       console.warn('Error changing home video:', err);
     }
@@ -122,6 +215,11 @@ function HomeVideo({ player, playing }) {
   const handleRestoreDefaultVideo = async () => {
     try {
       await resetHomeVideo();
+<<<<<<< HEAD
+=======
+      savedHomeVideoTime = 0;
+      player.play();
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     } catch (err) {
       console.warn('Error restoring default video:', err);
     }
@@ -129,15 +227,24 @@ function HomeVideo({ player, playing }) {
 
   const seekVideo = (event) => {
     event.stopPropagation();
+<<<<<<< HEAD
     if (!hasVideo || !videoDuration || !progressWidth) return;
+=======
+    if (!videoDuration || !progressWidth) return;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     const nextTime = Math.max(0, Math.min(event.nativeEvent.locationX / progressWidth, 1)) * videoDuration;
     Reflect.set(player, 'currentTime', nextTime);
     setVideoTime(nextTime);
   };
 
   const showControls = () => {
+<<<<<<< HEAD
     setVideoTime(hasVideo ? player.currentTime || 0 : 0);
     setVideoDuration(hasVideo && Number.isFinite(player.duration) ? player.duration : 0);
+=======
+    setVideoTime(player.currentTime || 0);
+    setVideoDuration(Number.isFinite(player.duration) ? player.duration : 0);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     controlsOpacity.stopAnimation();
     controlsOpacity.setValue(1);
     setControlsVisible(true);
@@ -158,6 +265,7 @@ function HomeVideo({ player, playing }) {
         onTouchStart={showControls}
         style={styles.homeVideo}
       >
+<<<<<<< HEAD
         {hasVideo ? (
           <VideoView
             player={player}
@@ -177,6 +285,16 @@ function HomeVideo({ player, playing }) {
             pointerEvents="none"
           />
         ) : null}
+=======
+        <VideoView
+          player={player}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+          contentFit="cover"
+          nativeControls={false}
+          surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
+        />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         {controlsVisible ? (
           <Animated.View pointerEvents="box-none" style={[StyleSheet.absoluteFill, styles.videoControlsOverlay, { opacity: controlsOpacity }]}>
             <View pointerEvents="box-none" style={styles.videoTopActions}>
@@ -189,7 +307,12 @@ function HomeVideo({ player, playing }) {
                 <Ionicons name="film-outline" size={13} color="#fff" />
                 <Text style={styles.videoActionText}>Change Video</Text>
               </Pressable>
+<<<<<<< HEAD
               <Pressable
+=======
+              {isCustomHomeVideo ? (
+                <Pressable
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   accessibilityRole="button"
                   accessibilityLabel="Restore Default Video"
                   onPress={handleRestoreDefaultVideo}
@@ -198,10 +321,15 @@ function HomeVideo({ player, playing }) {
                   <Ionicons name="refresh-outline" size={13} color="#fff" />
                   <Text style={styles.videoActionText}>Default</Text>
                 </Pressable>
+<<<<<<< HEAD
+=======
+              ) : null}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             </View>
             <View pointerEvents="box-none" style={styles.videoControlBar}>
               <View style={styles.videoInfoRow}>
                 <Text numberOfLines={1} style={styles.videoTitle}>
+<<<<<<< HEAD
                   {homeVideoName || theme.homeVideoName}
                 </Text>
                 <Text style={styles.videoTime}>
@@ -209,6 +337,15 @@ function HomeVideo({ player, playing }) {
                 </Text>
               </View>
               {hasVideo ? <Pressable
+=======
+                  {isCustomHomeVideo && homeVideoName ? homeVideoName : (currentTrack?.title || 'Mistletoe by Justin Bieber')}
+                </Text>
+                <Text style={styles.videoTime}>
+                  {formatVideoTime(videoTime)} / {formatVideoTime(videoDuration)}
+                </Text>
+              </View>
+              <Pressable
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 accessibilityRole="adjustable"
                 accessibilityLabel="Video progress"
                 accessibilityValue={{ min: 0, max: videoDuration, now: videoTime }}
@@ -219,12 +356,17 @@ function HomeVideo({ player, playing }) {
                 <View style={styles.videoProgressTrack}>
                   <View style={[styles.videoProgressFill, { width: `${progress * 100}%` }]} />
                 </View>
+<<<<<<< HEAD
               </Pressable> : null}
+=======
+              </Pressable>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             </View>
           </Animated.View>
         ) : null}
       </View>
       <View pointerEvents="none" style={styles.snowVideoBorder}>
+<<<<<<< HEAD
         <Ionicons name={theme.icon} style={[styles.snowflakeAccent, styles.snowflakeTopLeft]} />
         <Ionicons name={theme.icon} style={[styles.snowflakeAccent, styles.snowflakeTopRight]} />
         <Ionicons name={theme.icon} style={[styles.snowflakeAccent, styles.snowflakeBottomLeft]} />
@@ -235,6 +377,18 @@ function HomeVideo({ player, playing }) {
         style={[styles.videoBenjie, theme.id === 'rainy' && styles.videoBenjieRainy, { transform: [{ translateY: benjieY }, { rotate: benjieTilt }] }]}
       >
         <Image source={theme.assets.mascot} contentFit="contain" style={{ width: '100%', height: '100%' }} />
+=======
+        <Text style={[styles.snowflakeAccent, styles.snowflakeTopLeft]}>❄</Text>
+        <Text style={[styles.snowflakeAccent, styles.snowflakeTopRight]}>❄</Text>
+        <Text style={[styles.snowflakeAccent, styles.snowflakeBottomLeft]}>❄</Text>
+        <Text style={[styles.snowflakeAccent, styles.snowflakeBottomRight]}>❄</Text>
+      </View>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.videoBenjie, { transform: [{ translateY: benjieY }, { rotate: benjieTilt }] }]}
+      >
+        <Image source={benjieHat} contentFit="contain" style={{ width: '100%', height: '100%' }} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       </Animated.View>
     </View>
   );
@@ -251,9 +405,12 @@ function formatVideoTime(time) {
 }
 
 export default function Music() {
+<<<<<<< HEAD
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
   const { theme } = useTheme();
   const useReadableDisabledLetters = !['christmas', 'halloween', 'rainy'].includes(theme.id);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLetter, setSelectedLetter] = useState('All');
@@ -316,7 +473,11 @@ export default function Music() {
       return track ? { key: `track:${track.id}`, title: track.title, subtitle: track.artist, image: track.artwork, track } : null;
     }
     const songCount = entry.trackIds.length;
+<<<<<<< HEAD
     return { key: `album:${entry.id}`, title: entry.title, subtitle: `Playlist ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ${songCount} song${songCount === 1 ? '' : 's'}`, image: entry.artworkUri ? { uri: entry.artworkUri } : null, album: entry };
+=======
+    return { key: `album:${entry.id}`, title: entry.title, subtitle: `Playlist · ${songCount} song${songCount === 1 ? '' : 's'}`, image: entry.artworkUri ? { uri: entry.artworkUri } : null, album: entry };
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   }).filter(Boolean), [recentlyPlayed, tracks]);
 
   const sortedSongs = useMemo(() => {
@@ -359,8 +520,13 @@ export default function Music() {
   }, [groupedSections, selectedLetter]);
 
   return (
+<<<<<<< HEAD
     <ThemeImageBackground
       source={theme.assets.home}
+=======
+    <ImageBackground
+      source={christmasBackground}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       contentFit="cover"
       autoplay
       style={styles.background}
@@ -376,15 +542,26 @@ export default function Music() {
         >
           
                    <FadeInUp distance={30} duration={600}>
+<<<<<<< HEAD
             {Platform.OS !== 'web' ? <HomeVideo key="home-video-player" player={homeVideoPlayer} playing={playing} /> : null}
+=======
+            {Platform.OS !== 'web' ? <HomeVideo key="home-video-player" player={homeVideoPlayer} playing={playing} currentTrack={currentTrack} /> : null}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           </FadeInUp>
 
           <FadeInUp delay={150}>
             <View style={styles.header}>
+<<<<<<< HEAD
               <View style={styles.headerCopy}>
                 <View style={styles.headingTitleRow}>
                   <Text numberOfLines={1} style={styles.name}>What sounds good today?</Text>
                   <Ionicons name={theme.icon} style={styles.headingSnowflake} />
+=======
+              <View>
+                <View style={styles.headingTitleRow}>
+                  <Text numberOfLines={1} style={styles.name}>What sounds good today?</Text>
+                  <Text style={styles.headingSnowflake}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 </View>
                 <Text style={styles.greeting}>Pick a song for the moment.</Text>
               </View>
@@ -410,7 +587,11 @@ export default function Music() {
                       if (category.label === 'My Albums') router.push('/Albums');
                       if (category.label === 'Podcast') router.push('/podcast');
                     }}
+<<<<<<< HEAD
                     style={[styles.categoryBook, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderColor: theme.colors.surfaceBorder }, category.label === 'All' && styles.categoryBookSongs, isSelected && styles.categoryBookSelected]}
+=======
+                    style={[styles.categoryBook, category.label === 'All' && styles.categoryBookSongs, isSelected && styles.categoryBookSelected]}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   >
                     <View style={[styles.categoryBookIconFrame, isSelected && styles.categoryBookIconFrameSelected]}>
                       <Ionicons name={category.icon} size={29} color={COLORS.gold} />
@@ -429,7 +610,11 @@ export default function Music() {
             <View style={[styles.sectionHeading, styles.recentHeading]}>
               <View style={styles.headingTitleRow}>
                 <Text style={styles.sectionTitle}>Recently Played</Text>
+<<<<<<< HEAD
                 <Ionicons name={theme.icon} style={styles.headingSnowflake} />
+=======
+                <Text style={styles.headingSnowflake}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </View>
               <Pressable accessibilityRole="button" onPress={() => router.push('/RecentlyPlayed')} hitSlop={8}>
                 <View style={styles.seeAllRow}><Text style={styles.seeAll}>See all</Text><Ionicons name="chevron-forward" size={14} color={COLORS.gold} /></View>
@@ -455,14 +640,23 @@ export default function Music() {
                     }
                   }} style={styles.albumCard}>
                     <SongArtwork source={item.image} style={styles.albumArt} />
+<<<<<<< HEAD
                     <Text numberOfLines={1} style={[styles.albumTitle, theme.id === 'valentines' && { color: theme.colors.primary }]}>{item.title}</Text>
                     <Text numberOfLines={1} style={[styles.albumSubtitle, theme.id === 'valentines' && { color: theme.colors.muted }]}>{item.subtitle}</Text>
+=======
+                    <Text numberOfLines={1} style={styles.albumTitle}>{item.title}</Text>
+                    <Text numberOfLines={1} style={styles.albumSubtitle}>{item.subtitle}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   </PressableScale>
                 ))}
               </ScrollView>
             ) : (
               <View style={styles.recentEmpty}>
+<<<<<<< HEAD
                 <Ionicons name="time-outline" size={22} color={COLORS.gold} />
+=======
+                <Ionicons name="time-outline" size={22} color={COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 <Text style={styles.recentEmptyText}>Songs and albums you play will show up here.</Text>
               </View>
             )}
@@ -473,7 +667,11 @@ export default function Music() {
               <View style={[styles.sectionHeading, styles.artistCollectionsHeading]}>
                 <View style={styles.headingTitleRow}>
                   <Text style={styles.sectionTitle}>Artists</Text>
+<<<<<<< HEAD
                   <Ionicons name={theme.icon} style={styles.headingSnowflake} />
+=======
+                  <Text style={styles.headingSnowflake}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 </View>
               </View>
               <ScrollView
@@ -491,8 +689,13 @@ export default function Music() {
                     style={styles.artistCollectionCard}
                   >
                     <SongArtwork source={artistCovers[collection.id] ? { uri: artistCovers[collection.id] } : collection.artwork} style={styles.artistCollectionArt} iconSize={35} />
+<<<<<<< HEAD
                     <Text numberOfLines={1} style={[styles.artistCollectionName, theme.id === 'valentines' && { color: theme.colors.primary }]}>{collection.artist}</Text>
                     <Text style={[styles.artistCollectionCount, theme.id === 'valentines' && { color: theme.colors.muted }]}>{collection.tracks.length} {collection.tracks.length === 1 ? 'song' : 'songs'}</Text>
+=======
+                    <Text numberOfLines={1} style={styles.artistCollectionName}>{collection.artist}</Text>
+                    <Text style={styles.artistCollectionCount}>{collection.tracks.length} {collection.tracks.length === 1 ? 'song' : 'songs'}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   </Pressable>
                 ))}
               </ScrollView>
@@ -523,7 +726,11 @@ export default function Music() {
               <View style={[styles.sectionHeading, styles.homeAlbumsHeading]}>
                 <View style={styles.headingTitleRow}>
                   <Text style={styles.sectionTitle}>Your Albums</Text>
+<<<<<<< HEAD
                   <Ionicons name={theme.icon} style={styles.headingSnowflake} />
+=======
+                  <Text style={styles.headingSnowflake}>❄</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 </View>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/Albums')} hitSlop={8}>
                   <View style={styles.seeAllRow}><Text style={styles.seeAll}>See all</Text><Ionicons name="chevron-forward" size={14} color={COLORS.gold} /></View>
@@ -532,15 +739,24 @@ export default function Music() {
               <ScrollView
                 horizontal
                 style={styles.homeAlbumsScroll}
+<<<<<<< HEAD
                 contentContainerStyle={styles.homeMusicAlbumsRow}
+=======
+                contentContainerStyle={styles.homeAlbumsRow}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 showsHorizontalScrollIndicator={false}
               >
                 {homeAlbums.map((album) => {
                   const albumTracks = album.tracks ?? album.trackIds?.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) ?? [];
                   const artwork = album.artworkUri ? { uri: album.artworkUri } : album.artwork ?? null;
                   const subtitle = album.isUserAlbum
+<<<<<<< HEAD
                     ? `Playlist ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ${albumTracks.length} song${albumTracks.length === 1 ? '' : 's'}`
                     : `${album.artist || 'Album'} ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ${albumTracks.length} song${albumTracks.length === 1 ? '' : 's'}`;
+=======
+                    ? `Playlist · ${albumTracks.length} song${albumTracks.length === 1 ? '' : 's'}`
+                    : `${album.artist || 'Album'} · ${albumTracks.length} song${albumTracks.length === 1 ? '' : 's'}`;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
                   return (
                     <Pressable
@@ -550,9 +766,15 @@ export default function Music() {
                       onPress={() => router.push({ pathname: '/Albums', params: { albumId: album.routeId ?? album.id } })}
                       style={styles.homeAlbumCard}
                     >
+<<<<<<< HEAD
                       <SongArtwork source={artwork} style={styles.homeAlbumArt} iconSize={35} />
                       <Text numberOfLines={1} style={[styles.homeAlbumTitle, theme.id === 'valentines' && { color: theme.colors.primary }]}>{album.title}</Text>
                       <Text numberOfLines={1} style={[styles.homeAlbumSubtitle, theme.id === 'valentines' && { color: theme.colors.muted }]}>{subtitle}</Text>
+=======
+                      <SongArtwork source={artwork} style={styles.homeAlbumArt} iconSize={42} />
+                      <Text numberOfLines={1} style={styles.homeAlbumTitle}>{album.title}</Text>
+                      <Text numberOfLines={1} style={styles.homeAlbumSubtitle}>{subtitle}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                     </Pressable>
                   );
                 })}
@@ -597,7 +819,10 @@ export default function Music() {
                         styles.letterPill,
                         isSelected && styles.letterPillSelected,
                         !isAvailable && styles.letterPillDisabled,
+<<<<<<< HEAD
                         !isAvailable && useReadableDisabledLetters && { opacity: 1, backgroundColor: theme.id === 'independence' ? theme.colors.surfaceTint : theme.colors.surfaceDeep, borderColor: theme.id === 'independence' ? theme.colors.primary : theme.colors.surfaceBorder },
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                       ]}
                     >
                       <Text
@@ -605,7 +830,10 @@ export default function Music() {
                           styles.letterText,
                           isSelected && styles.letterTextSelected,
                           !isAvailable && styles.letterTextDisabled,
+<<<<<<< HEAD
                           !isAvailable && useReadableDisabledLetters && { color: theme.id === 'independence' ? theme.colors.primary : theme.colors.onSurfaceMuted },
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                         ]}
                       >
                         {letter}
@@ -625,7 +853,11 @@ export default function Music() {
                     <Text style={styles.letterBadgeText}>{section.letter}</Text>
                   </View>
                   <View style={styles.letterLine} />
+<<<<<<< HEAD
                   <Text style={[styles.letterCount, theme.id === 'valentines' && { color: theme.colors.muted }]}>
+=======
+                  <Text style={styles.letterCount}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                     {section.songs.length} {section.songs.length === 1 ? 'song' : 'songs'}
                   </Text>
                 </View>
@@ -643,11 +875,19 @@ export default function Music() {
                     >
                       <SongArtwork source={song.image} style={styles.songArt} iconSize={20} />
                       <View style={styles.songDetails}>
+<<<<<<< HEAD
                         <Text numberOfLines={1} style={[styles.songTitle, theme.id === 'valentines' && { color: theme.colors.primary }]}>{song.title}</Text>
                         <Text numberOfLines={1} style={[styles.songArtist, theme.id === 'valentines' && { color: theme.colors.muted }]}>{song.artist || 'Unknown artist'}</Text>
                       </View>
                       <View style={styles.playButton}>
                         <Ionicons name="play" size={14} color={COLORS.gold} />
+=======
+                        <Text numberOfLines={1} style={styles.songTitle}>{song.title}</Text>
+                        <Text numberOfLines={1} style={styles.songArtist}>{song.artist || 'Unknown artist'}</Text>
+                      </View>
+                      <View style={styles.playButton}>
+                        <Ionicons name="play" size={14} color={COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                       </View>
                     </Pressable>
                   ))}
@@ -656,7 +896,11 @@ export default function Music() {
             ))}
             {!sortedSongs.length ? (
               <View style={styles.emptySongs}>
+<<<<<<< HEAD
                 <Ionicons name="musical-notes-outline" size={26} color={COLORS.gold} />
+=======
+                <Ionicons name="musical-notes-outline" size={26} color={COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 <Text style={styles.emptySongsTitle}>No songs yet</Text>
                 <Text style={styles.emptySongsMessage}>Choose your music folder in Settings. Songs sync automatically after you allow access.</Text>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/Settings')} style={styles.emptySongsButton}>
@@ -665,7 +909,11 @@ export default function Music() {
               </View>
             ) : selectedLetter !== 'All' && !displayedSections.length ? (
               <View style={styles.emptyFilter}>
+<<<<<<< HEAD
                 <Ionicons name="filter-outline" size={22} color={COLORS.gold} />
+=======
+                <Ionicons name="filter-outline" size={22} color={COLORS.green} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 <Text style={styles.emptyFilterText}>{`No songs starting with "${selectedLetter}"`}</Text>
                 <Pressable accessibilityRole="button" onPress={() => setSelectedLetter('All')} style={styles.clearFilterButton}>
                   <Text style={styles.clearFilterText}>Show all songs</Text>
@@ -675,7 +923,11 @@ export default function Music() {
           </View>
         </ScrollView>
 
+<<<<<<< HEAD
         <View style={[styles.bottomBar, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderTopColor: theme.colors.surfaceBorder }, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+=======
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           {[
             { label: 'Home', icon: 'home' },
             { label: 'Search', icon: 'search' },
@@ -710,23 +962,37 @@ export default function Music() {
           })}
         </View>
       </View>
+<<<<<<< HEAD
     </ThemeImageBackground>
   );
 }
 
 const BASE_COLORS = {
+=======
+    </ImageBackground>
+  );
+}
+
+const COLORS = {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   green: '#164d38',
   red: '#930d1c',
   gold: '#f4c86a',
   ink: '#fff3d5',
   muted: '#e2d2ad',
   cream: '#fff8e9',
+<<<<<<< HEAD
   progress: '#d92332',
   line: '#b88232',
   tint: 'rgba(0,24,16,0.22)',
 };
 
 const createStyles = (COLORS) => StyleSheet.create({
+=======
+};
+
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   background: { flex: 1, width: '100%' },
   screen: { flex: 1, backgroundColor: 'transparent' },
   christmasHeaderSpace: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1 },
@@ -744,7 +1010,11 @@ const createStyles = (COLORS) => StyleSheet.create({
       borderWidth: 3,
       borderColor: COLORS.gold,
       overflow: 'hidden',
+<<<<<<< HEAD
       backgroundColor: COLORS.green,
+=======
+      backgroundColor: '#164d38',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     },
   snowVideoBorder: { position: 'absolute', top: 120, left: 0, right: 0, height: 168, zIndex: 60, borderRadius: 16 },
   snowflakeAccent: { position: 'absolute', color: COLORS.cream, fontSize: 13, lineHeight: 16, textShadowColor: COLORS.gold, textShadowRadius: 5 },
@@ -753,41 +1023,66 @@ const createStyles = (COLORS) => StyleSheet.create({
   snowflakeBottomLeft: { bottom: -7, left: 7 },
   snowflakeBottomRight: { bottom: -7, right: 7 },
   videoBenjie: { position: 'absolute', zIndex: 0, elevation: 9, top: -83, alignSelf: 'center', width: 274, height: 270 },
+<<<<<<< HEAD
   videoBenjieRainy: { top: -114 },
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   videoControlsOverlay: { zIndex: 40 },
   videoTopActions: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 6, zIndex: 50 },
   videoActionButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   videoActionText: { color: '#fff', fontFamily: 'NunitoBold', fontSize: 10 },
+<<<<<<< HEAD
   videoControlBar: { position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: 43, justifyContent: 'flex-end', paddingHorizontal: 11, paddingTop: 5, paddingBottom: 0, backgroundColor: 'rgba(0,0,0,0.72)' },
+=======
+  videoControlBar: { position: 'absolute', left: 0, right: 0, bottom: 0, minHeight: 43, justifyContent: 'flex-end', paddingHorizontal: 11, paddingTop: 5, paddingBottom: 0, backgroundColor: 'transparent' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   videoInfoRow: { minHeight: 21, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, transform: [{ translateY: 3 }] },
   videoTitle: { flex: 1, color: '#fff', fontFamily: 'NunitoBold', fontSize: 13},
   videoTime: { color: '#fff', fontFamily: 'NunitoBold', fontSize: 11, fontVariant: ['tabular-nums'] },
   videoProgressHitArea: { height: 17, justifyContent: 'flex-end', paddingBottom: 0, marginHorizontal: -11 },
   videoProgressTrack: { height: 4, overflow: 'visible', borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' },
+<<<<<<< HEAD
   videoProgressFill: { height: '100%', borderRadius: 2, backgroundColor: COLORS.progress },
+=======
+  videoProgressFill: { height: '100%', borderRadius: 2, backgroundColor: '#ff1744' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceDeep,
     borderRadius: 12,
     padding: 10,
     marginBottom: 12,
   },
   headerCopy: { flex: 1, minWidth: 0 },
+=======
+    marginBottom: 12,
+  },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   name: { flexShrink: 1, color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 24, lineHeight: 30, textShadowColor: 'rgba(0,0,0,0.65)', textShadowRadius: 6 },
   greeting: { color: COLORS.cream, fontFamily: 'NunitoSemiBold', fontSize: 15, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 5 },
   categoryScroll: { height: 116, flexGrow: 0, flexShrink: 0, marginBottom: 14 },
   categories: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 2, paddingVertical: 5, paddingRight: 6 },
   categoryBook: {
+<<<<<<< HEAD
     width: HOME_CARD_WIDTH,
     height: HOME_CARD_HEIGHT,
+=======
+    width: 96,
+    height: 104,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     alignItems: 'center',
     justifyContent: 'center',
     gap: 7,
     padding: 7,
     borderRadius: 13,
+<<<<<<< HEAD
     backgroundColor: COLORS.red,
+=======
+    backgroundColor: '#8e1420',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 2,
     borderColor: COLORS.gold,
     shadowColor: COLORS.gold,
@@ -797,9 +1092,15 @@ const createStyles = (COLORS) => StyleSheet.create({
     elevation: 3,
   },
   categoryBookSongs: { backgroundColor: COLORS.green },
+<<<<<<< HEAD
   categoryBookSelected: { backgroundColor: COLORS.green, borderColor: COLORS.cream, shadowOpacity: 0.72, shadowRadius: 11, elevation: 5, transform: [{ translateY: -3 }] },
   categoryBookIconFrame: { width: 50, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 10, borderWidth: 1, borderColor: COLORS.line, backgroundColor: COLORS.tint },
   categoryBookIconFrameSelected: { borderColor: COLORS.cream, backgroundColor: COLORS.surfaceDeep },
+=======
+  categoryBookSelected: { backgroundColor: COLORS.green, borderColor: '#ffe49a', shadowOpacity: 0.72, shadowRadius: 11, elevation: 5, transform: [{ translateY: -3 }] },
+  categoryBookIconFrame: { width: 50, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(244,200,106,0.72)', backgroundColor: 'rgba(23,6,5,0.22)' },
+  categoryBookIconFrameSelected: { borderColor: '#ffe7a3', backgroundColor: 'rgba(0,25,15,0.4)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   categoryBookLabel: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 12, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 3 },
   categoryBookRibbon: { position: 'absolute', bottom: -10, width: 16, height: 17, backgroundColor: COLORS.red, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
   sectionHeading: {
@@ -807,15 +1108,19 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 11,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceDeep,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   },
   recentHeading: { marginBottom: 6 },
   homeAlbumsHeading: { marginTop: 14, marginBottom: 9 },
   artistCollectionsHeading: { marginTop: 14, marginBottom: 9 },
   artistCollectionsScroll: { flexGrow: 0, flexShrink: 0 },
+<<<<<<< HEAD
   artistCollectionsRow: { flexDirection: 'row', gap: 11, paddingBottom: 2 },
   artistCollectionCard: { width: HOME_CARD_WIDTH },
   artistCollectionArt: { width: HOME_CARD_WIDTH, height: HOME_CARD_HEIGHT, borderRadius: 13, borderWidth: 2, borderColor: COLORS.gold, backgroundColor: COLORS.green },
@@ -829,11 +1134,26 @@ const createStyles = (COLORS) => StyleSheet.create({
   homeAlbumTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 13, marginTop: 6 },
   homeAlbumSubtitle: { color: COLORS.gold, fontFamily: 'NunitoSemiBold', fontSize: 12, marginTop: 1 },
   sectionTitle: { flexShrink: 1, color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 19, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 5 },
+=======
+  artistCollectionsRow: { flexDirection: 'row', gap: 13, paddingBottom: 2 },
+  artistCollectionCard: { width: 136 },
+  artistCollectionArt: { width: 136, height: 136, borderRadius: 14, borderWidth: 2, borderColor: COLORS.gold, backgroundColor: '#123a2a' },
+  artistCollectionName: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 14, marginTop: 6 },
+  artistCollectionCount: { color: COLORS.gold, fontFamily: 'NunitoSemiBold', fontSize: 12, marginTop: 1 },
+  homeAlbumsScroll: { flexGrow: 0, flexShrink: 0 },
+  homeAlbumsRow: { flexDirection: 'row', gap: 14, paddingBottom: 2 },
+  homeAlbumCard: { width: 166 },
+  homeAlbumArt: { width: 166, height: 166, borderRadius: 14, borderWidth: 2, borderColor: COLORS.gold, backgroundColor: '#123a2a' },
+  homeAlbumTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 14, marginTop: 7 },
+  homeAlbumSubtitle: { color: COLORS.gold, fontFamily: 'NunitoSemiBold', fontSize: 12, marginTop: 1 },
+  sectionTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 19, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 5 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   headingSnowflake: { color: COLORS.gold, fontSize: 17, textShadowColor: COLORS.gold, textShadowRadius: 7 },
   seeAllRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   seeAll: { color: COLORS.gold, fontFamily: 'NunitoExtraBold', fontSize: 13, textShadowColor: 'rgba(0,0,0,0.45)', textShadowRadius: 4 },
   recentScroll: { height: 151, flexGrow: 0, flexShrink: 0 },
   recentRow: { flexDirection: 'row', gap: 11 },
+<<<<<<< HEAD
   albumCard: { width: HOME_CARD_WIDTH },
   albumArt: { width: HOME_CARD_WIDTH, height: HOME_CARD_HEIGHT, borderRadius: 13, borderWidth: 2, borderColor: COLORS.gold, backgroundColor: COLORS.green },
   albumTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 13, marginTop: 6, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 4 },
@@ -844,6 +1164,18 @@ const createStyles = (COLORS) => StyleSheet.create({
   headingTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
   countBadge: {
     backgroundColor: COLORS.surface,
+=======
+  albumCard: { width: 104 },
+  albumArt: { width: '100%', aspectRatio: 1, borderRadius: 12, borderWidth: 2, borderColor: COLORS.gold, backgroundColor: '#123a2a' },
+  albumTitle: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 13, marginTop: 6, textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 4 },
+  albumSubtitle: { color: COLORS.gold, fontFamily: 'NunitoSemiBold', fontSize: 12 },
+  recentEmpty: { minHeight: 55, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: COLORS.gold, backgroundColor: 'rgba(5,35,24,0.78)' },
+  recentEmptyText: { color: COLORS.cream, fontFamily: 'NunitoSemiBold', fontSize: 12, flexShrink: 1 },
+  songsHeading: { marginTop: 12, marginBottom: 8 },
+  headingTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  countBadge: {
+    backgroundColor: 'rgba(5, 35, 24, 0.72)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     paddingHorizontal: 7,
     paddingVertical: 1,
     borderRadius: 9,
@@ -861,9 +1193,15 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.line,
+=======
+    backgroundColor: 'rgba(5, 35, 24, 0.78)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 200, 106, 0.6)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   },
   letterPillSelected: {
     backgroundColor: COLORS.red,
@@ -880,7 +1218,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   letterHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 4 },
   letterBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: COLORS.green, alignItems: 'center', justifyContent: 'center' },
   letterBadgeText: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 11 },
+<<<<<<< HEAD
   letterLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: COLORS.line },
+=======
+  letterLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(244, 200, 106, 0.55)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   letterCount: { color: COLORS.muted, fontFamily: 'NunitoSemiBold', fontSize: 11 },
   sectionSongs: { gap: 8 },
   emptyFilter: {
@@ -888,7 +1230,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 24,
     gap: 8,
+<<<<<<< HEAD
     backgroundColor: COLORS.surface,
+=======
+    backgroundColor: 'rgba(5, 35, 24, 0.82)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.gold,
@@ -903,13 +1249,21 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   clearFilterText: { color: COLORS.cream, fontFamily: 'NunitoBold', fontSize: 11 },
   songList: { gap: 8 },
+<<<<<<< HEAD
   emptySongs: { alignItems: 'center', paddingHorizontal: 18, paddingVertical: 24, borderRadius: 14, borderWidth: 1, borderColor: COLORS.gold, backgroundColor: COLORS.surface },
+=======
+  emptySongs: { alignItems: 'center', paddingHorizontal: 18, paddingVertical: 24, borderRadius: 14, borderWidth: 1, borderColor: COLORS.gold, backgroundColor: 'rgba(5,35,24,0.84)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   emptySongsTitle: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 14, marginTop: 8, textAlign: 'center' },
   emptySongsMessage: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 12, lineHeight: 17, marginTop: 4, textAlign: 'center' },
   emptySongsButton: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 16, marginTop: 12, borderRadius: 18, backgroundColor: COLORS.green },
   emptySongsButtonText: { color: COLORS.cream, fontFamily: 'NunitoBold', fontSize: 12 },
   songRow: { minHeight: 50, flexDirection: 'row', alignItems: 'center', gap: 10 },
+<<<<<<< HEAD
   songArt: { width: 44, height: 44, borderRadius: 8, borderWidth: 1.5, borderColor: COLORS.gold, backgroundColor: COLORS.green },
+=======
+  songArt: { width: 44, height: 44, borderRadius: 8, borderWidth: 1.5, borderColor: COLORS.gold, backgroundColor: '#123a2a' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   songDetails: { flex: 1, minWidth: 0 },
   songTitle: { color: COLORS.ink, fontFamily: 'NunitoBold', fontSize: 12 },
   songArtist: { color: COLORS.gold, fontFamily: 'NunitoRegular', fontSize: 11 },
@@ -919,7 +1273,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
     backgroundColor: COLORS.tint,
+=======
+    backgroundColor: 'rgba(244, 200, 106, 0.16)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 1,
     borderColor: COLORS.gold,
   },
@@ -939,4 +1297,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   tabLabel: { color: COLORS.gold, fontFamily: 'NunitoSemiBold', fontSize: 11 },
   tabLabelSelected: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', textShadowColor: COLORS.gold, textShadowRadius: 5 },
 });
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

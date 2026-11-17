@@ -181,8 +181,16 @@ export async function pickAndReplacePodcastVideo(existingVideo) {
   const selectedAsset = result.assets[0];
   const saved = await copyAssetToAppStorage(selectedAsset, `podcast-video-rep-${Date.now()}`);
 
+<<<<<<< HEAD
   return {
     ...existingVideo,
+=======
+  if (existingVideo?.uri && existingVideo.uri !== saved.uri) {
+    await deleteVideoFile(existingVideo.uri);
+  }
+
+  return {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     id: existingVideo?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     ...(existingVideo?.coverUri ? { coverUri: existingVideo.coverUri } : {}),
     ...(existingVideo?.title ? { title: existingVideo.title } : {}),

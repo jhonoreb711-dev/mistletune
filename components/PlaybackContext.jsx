@@ -6,16 +6,26 @@ import { useEventListener } from 'expo';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocalLibraryId } from './localLibraryIdentity';
+<<<<<<< HEAD
 import { appendQueueTrack, queueAfterRemoval } from './queueUtils';
 import { getFolderLabel, importSelectedAudioFiles, listImportedAudio, scanMusicFolder, selectMusicFolder, clearLocalLibrary } from './localMusicLibrary';
 import { clearAllGeneratedLyrics } from './generatedLyricsCache';
+=======
+import { getFolderLabel, importSelectedAudioFiles, listImportedAudio, scanMusicFolder, selectMusicFolder } from './localMusicLibrary';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { addRecentlyPlayed, getRecentlyPlayed } from './recentlyPlayed';
 import { addSavedTrackArtwork, pickTrackArtwork, removeTrackArtwork } from './trackArtwork';
 import * as FileSystem from 'expo-file-system/legacy';
 import { HOME_VIDEO_URI_KEY, HOME_VIDEO_NAME_KEY } from './homeVideoStorage';
 import { pickAndSaveHomeVideo, restoreDefaultHomeVideo } from './videoFileService';
+<<<<<<< HEAD
 import { useTheme } from '../themes/ThemeProvider';
 import { batchTranscribeTracks } from './batchTranscription';
+=======
+import homeVideo from '../assets/youtube-video.mp4';
+import { generateOfflineLyrics } from './offlineTranscription';
+import { loadLyrics } from './lyricsStorage';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import LyricsPreparationOverlay from './LyricsPreparationOverlay';
 
 const musicFolderKey = (libraryId) => `music-player.music-folder-uri:${libraryId}`;
@@ -24,6 +34,7 @@ const EMPTY_TRACKS = [];
 const PlaybackContext = createContext(null);
 
 export function PlaybackProvider({ children }) {
+<<<<<<< HEAD
   const { theme } = useTheme();
   const homeVideo = theme.assets.homeVideo;
   const defaultVideoName = theme.homeVideoName;
@@ -33,6 +44,13 @@ export function PlaybackProvider({ children }) {
   const [isSpeechActive, setIsSpeechActive] = useState(false);
 
   const homeVideoPlayer = useVideoPlayer(null, (videoPlayer) => {
+=======
+  const [homeVideoName, setHomeVideoName] = useState('youtube-video.mp4');
+  const [isCustomHomeVideo, setIsCustomHomeVideo] = useState(false);
+  const [isSpeechActive, setIsSpeechActive] = useState(false);
+
+  const homeVideoPlayer = useVideoPlayer(homeVideo, (videoPlayer) => {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     videoPlayer.loop = true;
   });
 
@@ -54,13 +72,19 @@ export function PlaybackProvider({ children }) {
           const info = await FileSystem.getInfoAsync(storedUri);
           if (info.exists && info.size > 0) {
             const storedName = await AsyncStorage.getItem(HOME_VIDEO_NAME_KEY);
+<<<<<<< HEAD
             if (!active) return;
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             await homeVideoPlayer.replaceAsync({ uri: storedUri });
             Reflect.set(homeVideoPlayer, 'loop', true);
             if (active) {
               setHomeVideoName(storedName || 'Custom Video');
               setIsCustomHomeVideo(true);
+<<<<<<< HEAD
               setHomeVideoRevision((revision) => revision + 1);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             }
             return;
           }
@@ -68,6 +92,7 @@ export function PlaybackProvider({ children }) {
         await AsyncStorage.multiRemove([HOME_VIDEO_URI_KEY, HOME_VIDEO_NAME_KEY]);
       }
       if (active) {
+<<<<<<< HEAD
         homeVideoPlayer.pause();
         await homeVideoPlayer.replaceAsync(typeof homeVideo === 'number' ? homeVideo : null);
         if (!active) return;
@@ -79,6 +104,14 @@ export function PlaybackProvider({ children }) {
     }).catch(() => {});
     return () => { active = false; };
   }, [homeVideoPlayer, homeVideo, defaultVideoName]);
+=======
+        setHomeVideoName('youtube-video.mp4');
+        setIsCustomHomeVideo(false);
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [homeVideoPlayer]);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   const changeHomeVideo = useCallback(async () => {
     const saved = await pickAndSaveHomeVideo();
@@ -90,23 +123,37 @@ export function PlaybackProvider({ children }) {
     } catch {}
     setHomeVideoName(saved.name);
     setIsCustomHomeVideo(true);
+<<<<<<< HEAD
     setHomeVideoRevision((revision) => revision + 1);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     return saved;
   }, [homeVideoPlayer]);
 
   const resetHomeVideo = useCallback(async () => {
+<<<<<<< HEAD
     // Unload a custom video before removing its file, including GIF-only themes.
     homeVideoPlayer.pause();
     await homeVideoPlayer.replaceAsync(typeof homeVideo === 'number' ? homeVideo : null);
     await restoreDefaultHomeVideo();
+=======
+    await restoreDefaultHomeVideo();
+    await homeVideoPlayer.replaceAsync(homeVideo);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     Reflect.set(homeVideoPlayer, 'loop', true);
     try {
       Reflect.set(homeVideoPlayer, 'currentTime', 0);
     } catch {}
+<<<<<<< HEAD
     setHomeVideoName(defaultVideoName);
     setIsCustomHomeVideo(false);
     setHomeVideoRevision((revision) => revision + 1);
   }, [homeVideoPlayer, homeVideo, defaultVideoName]);
+=======
+    setHomeVideoName('youtube-video.mp4');
+    setIsCustomHomeVideo(false);
+  }, [homeVideoPlayer]);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const hasStartedPlayback = useRef(false);
   const pendingTrackStart = useRef(null);
   const audioModeReady = useRef(null);
@@ -120,18 +167,26 @@ export function PlaybackProvider({ children }) {
   const [shuffleEnabled, setShuffleEnabled] = useState(false);
   const [loopMode, setLoopMode] = useState('all');
   const playlistSources = useMemo(() => queue.tracks.map((track) => track.source), [queue.tracks]);
+<<<<<<< HEAD
   const playlistOptions = useMemo(() => ({ sources: playlistSources, loop: 'all' }), [playlistSources]);
   const player = useAudioPlaylist(playlistOptions);
   const status = useAudioPlaylistStatus(player);
   const statusRef = useRef(status);
   useEffect(() => { statusRef.current = status; });
+=======
+  const player = useAudioPlaylist({ sources: playlistSources, loop: 'all' });
+  const status = useAudioPlaylistStatus(player);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const playerRef = useRef(player);
   const lockScreenRegistration = useRef(null);
   const preparation = useRef(null);
   const requestNumber = useRef(0);
   const startQueueNowRef = useRef(null);
+<<<<<<< HEAD
   const queueResumeRef = useRef(null);
   const [queueOpen, setQueueOpen] = useState(false);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [lyricsPreparation, setLyricsPreparation] = useState(null);
   const [lyricsRevision, setLyricsRevision] = useState(0);
 
@@ -212,8 +267,11 @@ export function PlaybackProvider({ children }) {
   useEventListener(player, 'trackChanged', ({ currentIndex }) => {
     if (preparation.current) return;
     if (!hasStartedPlayback.current) return;
+<<<<<<< HEAD
     // Rebuilding a playlist can emit its initial index before resume completes.
     if (queueResumeRef.current) return;
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     const activeTrack = queue.tracks[currentIndex];
     if (activeTrack) setCurrentTrack(activeTrack);
   }, [queue.tracks]);
@@ -234,6 +292,7 @@ export function PlaybackProvider({ children }) {
     });
   }, [configureAudioMode, player, queue]);
 
+<<<<<<< HEAD
   // Restore the playing track's position after a queue reorder (the playlist
   // re-creates its native player when sources change).
   useEffect(() => {
@@ -260,6 +319,8 @@ export function PlaybackProvider({ children }) {
     return () => { cancelled = true; };
   }, [configureAudioMode, queue]);
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   useEffect(() => {
     let active = true;
     getLocalLibraryId().then((id) => { if (active) setLibraryId(id); }).catch(() => {});
@@ -320,12 +381,17 @@ export function PlaybackProvider({ children }) {
     return () => { active = false; };
   }, [libraryId]);
 
+<<<<<<< HEAD
   const chooseMusicFolder = useCallback(async (onProgress) => {
+=======
+  const chooseMusicFolder = useCallback(async () => {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     if (!libraryId) throw new Error('Your music library is still loading. Try again in a moment.');
     const directory = await selectMusicFolder();
     await AsyncStorage.setItem(musicFolderKey(libraryId), directory.uri);
     await AsyncStorage.setItem(`music-player.music-folder-owned:${libraryId}`, '1');
     setMusicFolderUri(directory.uri);
+<<<<<<< HEAD
     onProgress?.({ stage: 'importing', message: 'Adding your music...' });
     const importedTracks = await scanMusicFolder(directory.uri, libraryId);
     const tracksWithArtwork = await addSavedTrackArtwork(libraryId, importedTracks);
@@ -387,6 +453,33 @@ export function PlaybackProvider({ children }) {
     setLyricsRevision((revision) => revision + 1);
   }, [finishPreparation, libraryId]);
 
+=======
+    const importedTracks = await scanMusicFolder(directory.uri, libraryId);
+    const tracksWithArtwork = await addSavedTrackArtwork(libraryId, importedTracks);
+    setTracks(tracksWithArtwork);
+    setQueue((current) => current.kind === 'library' ? { tracks: tracksWithArtwork, kind: 'library' } : current);
+    return { folderName: getFolderLabel(directory.uri), trackCount: tracksWithArtwork.length };
+  }, [libraryId]);
+
+  const rescanMusicFolder = useCallback(async () => {
+    if (!libraryId) throw new Error('Your music library is still loading. Try again in a moment.');
+    const importedTracks = await scanMusicFolder(musicFolderUri, libraryId);
+    const updatedTracks = await addSavedTrackArtwork(libraryId, importedTracks);
+    setTracks(updatedTracks);
+    setQueue((current) => current.kind === 'library' ? { tracks: updatedTracks, kind: 'library' } : current);
+    return importedTracks.length;
+  }, [libraryId, musicFolderUri]);
+
+  const addAudioFiles = useCallback(async () => {
+    if (!libraryId) throw new Error('Your music library is still loading. Try again in a moment.');
+    const importedTracks = await importSelectedAudioFiles(libraryId);
+    const updatedTracks = await addSavedTrackArtwork(libraryId, importedTracks);
+    setTracks(updatedTracks);
+    setQueue((current) => current.kind === 'library' ? { tracks: updatedTracks, kind: 'library' } : current);
+    return importedTracks.length;
+  }, [libraryId]);
+
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const updateTrackArtwork = useCallback((trackId, artworkUri) => {
     const update = (track) => track?.id === trackId
       ? { ...track, artwork: artworkUri ? { uri: artworkUri } : null }
@@ -439,6 +532,18 @@ export function PlaybackProvider({ children }) {
 
   useEffect(() => { startQueueNowRef.current = startQueueNow; }, [startQueueNow]);
 
+<<<<<<< HEAD
+=======
+  const finishPreparation = useCallback((playWithoutLyrics = false) => {
+    const pending = preparation.current;
+    requestNumber.current++;
+    preparation.current = null;
+    pending?.task?.cancel();
+    setLyricsPreparation(null);
+    if (playWithoutLyrics && pending) startQueueNowRef.current?.(...pending.args);
+  }, []);
+
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   useEffect(() => () => {
     requestNumber.current++;
     preparation.current?.task?.cancel();
@@ -446,19 +551,68 @@ export function PlaybackProvider({ children }) {
 
   const startQueue = useCallback((queueTracks, track, kind, recentItem = null) => {
     if (!track?.source || !queueTracks.some((item) => item.id === track.id)) return false;
+<<<<<<< HEAD
     finishPreparation();
     return startQueueNowRef.current?.(queueTracks, track, kind, recentItem) ?? false;
   }, [finishPreparation]);
+=======
+    const uri = typeof track.source === 'string' ? track.source : track.source?.uri;
+    // Podcast/video and nonlocal sources retain their original playback path.
+    if (!uri?.startsWith('file://') || !/\.(mp3|m4a|aac|wav|flac|ogg)(?:\?|$)/i.test(uri)) {
+      finishPreparation();
+      return startQueueNowRef.current?.(queueTracks, track, kind, recentItem) ?? false;
+    }
+    pendingTrackStart.current = null;
+    playerRef.current.pause();
+    preparation.current?.task?.cancel();
+    const token = ++requestNumber.current;
+    const pending = { args: [queueTracks, track, kind, recentItem], task: null };
+    preparation.current = pending;
+    const update = (patch) => {
+      if (token === requestNumber.current) setLyricsPreparation((state) => ({ title: track.title, stage: 'Checking saved lyrics', progress: 0, ...state, ...patch }));
+    };
+    update({ title: track.title, stage: 'Checking saved lyrics', progress: 0, error: null });
+    void (async () => {
+      try {
+        const imported = await loadLyrics(libraryId, track.id);
+        if (token !== requestNumber.current) return;
+        if (!imported || imported.generated) {
+          pending.task = generateOfflineLyrics(track, {
+            libraryId,
+            onStage: (stage) => update({ stage }),
+            onProgress: (progress) => update({ progress }),
+          });
+          await pending.task.promise;
+        }
+        if (token !== requestNumber.current) return;
+        preparation.current = null;
+        setLyricsPreparation(null);
+        setLyricsRevision((revision) => revision + 1);
+        startQueueNowRef.current?.(...pending.args);
+      } catch (error) {
+        if (token === requestNumber.current) update({ error: error.message || 'Offline lyrics generation failed.' });
+      }
+    })();
+    return true;
+  }, [finishPreparation, libraryId]);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   const playTrack = useCallback((track) => {
     setShuffleEnabled(false);
     originalTracksRef.current = tracks;
     return startQueue(tracks, track, 'library');
   }, [startQueue, tracks]);
+<<<<<<< HEAD
   const playQueue = useCallback((queueTracks, track = queueTracks[0], recentItem = null, origin = null) => {
     setShuffleEnabled(false);
     originalTracksRef.current = queueTracks;
     return startQueue(queueTracks, track, origin === 'benjie-playlist' ? 'benjie-playlist' : 'custom', recentItem);
+=======
+  const playQueue = useCallback((queueTracks, track = queueTracks[0], recentItem = null) => {
+    setShuffleEnabled(false);
+    originalTracksRef.current = queueTracks;
+    return startQueue(queueTracks, track, 'custom', recentItem);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   }, [startQueue]);
 
   const togglePlayback = useCallback(() => {
@@ -518,6 +672,7 @@ export function PlaybackProvider({ children }) {
     return nextMode;
   }, [loopMode]);
 
+<<<<<<< HEAD
   const addToQueue = useCallback((track) => {
     if (preparation.current || appendQueueTrack(queue.tracks, track) === queue.tracks) return false;
     if (currentTrack?.id && !queueResumeRef.current) {
@@ -576,6 +731,8 @@ export function PlaybackProvider({ children }) {
     setQueue((current) => ({ ...current, tracks: nextTracks }));
   }, [currentTrack, queue.tracks, shuffleEnabled]);
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const stopPlayback = useCallback(() => {
     finishPreparation();
     pendingTrackStart.current = null;
@@ -588,10 +745,15 @@ export function PlaybackProvider({ children }) {
   }, [finishPreparation, player]);
 
   const value = useMemo(() => ({
+<<<<<<< HEAD
     player,
     homeVideoPlayer,
     homeVideoName,
     homeVideoRevision,
+=======
+    homeVideoPlayer,
+    homeVideoName,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     isCustomHomeVideo,
     changeHomeVideo,
     resetHomeVideo,
@@ -612,14 +774,20 @@ export function PlaybackProvider({ children }) {
     playing: status.playing,
     currentTime: status.currentTime ?? 0,
     duration: status.duration ?? 0,
+<<<<<<< HEAD
     queueTracks: queue.tracks,
     queueKind: queue.kind,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     playTrack,
     playQueue,
     chooseMusicFolder,
     rescanMusicFolder,
     addAudioFiles,
+<<<<<<< HEAD
     clearLibrary,
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     togglePlayback,
     skip,
     toggleShuffle,
@@ -627,6 +795,7 @@ export function PlaybackProvider({ children }) {
     toggleLoopMode,
     stopPlayback,
     seekTo: (seconds) => player.seekTo(seconds),
+<<<<<<< HEAD
     queueOpen,
     openQueueSheet,
     closeQueueSheet,
@@ -634,6 +803,9 @@ export function PlaybackProvider({ children }) {
     removeFromQueue,
     addToQueue,
   }), [homeVideoPlayer, homeVideoName, homeVideoRevision, isCustomHomeVideo, changeHomeVideo, resetHomeVideo, isSpeechActive, setSpeechActive, libraryId, lyricsRevision, addAudioFiles, chooseMusicFolder, clearLibrary, clearTrackArtwork, currentTrack, editTrackArtwork, loopMode, musicFolderUri, player, playQueue, playTrack, recentlyPlayed, rescanMusicFolder, shuffleEnabled, toggleShuffle, toggleLoopMode, queueOpen, openQueueSheet, closeQueueSheet, reorderQueue, removeFromQueue, addToQueue, queue.tracks, queue.kind, skip, status.currentTime, status.duration, status.playing, stopPlayback, togglePlayback, tracks]);
+=======
+  }), [homeVideoPlayer, homeVideoName, isCustomHomeVideo, changeHomeVideo, resetHomeVideo, isSpeechActive, setSpeechActive, libraryId, lyricsRevision, addAudioFiles, chooseMusicFolder, clearTrackArtwork, currentTrack, editTrackArtwork, loopMode, musicFolderUri, player, playQueue, playTrack, recentlyPlayed, rescanMusicFolder, shuffleEnabled, toggleShuffle, toggleLoopMode, queue.tracks.length, skip, status.currentTime, status.duration, status.playing, stopPlayback, togglePlayback, tracks]);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   return <PlaybackContext.Provider value={value}>{children}
     <LyricsPreparationOverlay state={lyricsPreparation} onCancel={() => finishPreparation()} onSkip={() => finishPreparation(true)} />

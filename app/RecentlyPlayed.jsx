@@ -1,18 +1,29 @@
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+<<<<<<< HEAD
 import ThemeImageBackground from '../components/ThemeImageBackground';
+=======
+import { ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+<<<<<<< HEAD
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
+=======
+import christmasBackground from '../assets/christmas_bg4.png';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from '../components/PlaybackContext';
 import SongArtwork from '../components/SongArtwork';
 
 export default function RecentlyPlayed() {
+<<<<<<< HEAD
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
   const { theme } = useTheme();
   const needsLightText = theme.id !== 'halloween';
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const { currentTrack, playTrack, playQueue, recentlyPlayed, tracks } = usePlayback();
   const entries = useMemo(() => recentlyPlayed.map((entry) => ({
@@ -38,6 +49,7 @@ export default function RecentlyPlayed() {
   };
 
   return (
+<<<<<<< HEAD
     <ThemeImageBackground source={theme.assets.collection} contentFit="cover" autoplay style={styles.background}>
       <StatusBar barStyle={needsLightText ? 'light-content' : 'dark-content'} />
       <View style={[styles.screen, theme.id === 'halloween' && { backgroundColor: 'rgba(255,241,220,0.9)' }, { paddingTop: insets.top + 40 }]}>
@@ -48,6 +60,18 @@ export default function RecentlyPlayed() {
           <View style={styles.headingCopy}>
             <Text style={[styles.heading, needsLightText && { color: COLORS.cream }]}>Recently Played</Text>
             <Text style={[styles.subheading, needsLightText && { color: COLORS.onSurfaceMuted }]}>History clears after 24 hours</Text>
+=======
+    <ImageBackground source={christmasBackground} contentFit="cover" style={styles.background}>
+      <StatusBar barStyle="dark-content" />
+      <View style={[styles.screen, { paddingTop: insets.top + 40 }]}>
+        <View style={styles.header}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} hitSlop={10} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={25} color={COLORS.ink} />
+          </Pressable>
+          <View style={styles.headingCopy}>
+            <Text style={styles.heading}>Recently Played</Text>
+            <Text style={styles.subheading}>History clears after 24 hours</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           </View>
         </View>
 
@@ -59,7 +83,11 @@ export default function RecentlyPlayed() {
               const title = isTrack ? entry.track?.title ?? entry.title : entry.title;
               const subtitle = isTrack
                 ? entry.track?.artist ?? entry.artist ?? 'No longer in your library'
+<<<<<<< HEAD
                 : `Playlist Â· ${entry.trackIds.length} song${entry.trackIds.length === 1 ? '' : 's'}`;
+=======
+                : `Playlist · ${entry.trackIds.length} song${entry.trackIds.length === 1 ? '' : 's'}`;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               const playable = isTrack ? Boolean(entry.track?.source) : entry.trackIds.some((id) => tracks.some((track) => track.id === id && track.source));
               return (
                 <Pressable
@@ -72,8 +100,13 @@ export default function RecentlyPlayed() {
                 >
                   <SongArtwork source={image} style={styles.art} iconSize={22} />
                   <View style={styles.details}>
+<<<<<<< HEAD
                     <Text numberOfLines={1} style={[styles.title, needsLightText && { color: COLORS.cream }]}>{title}</Text>
                     <Text numberOfLines={1} style={[styles.subtitle, needsLightText && { color: COLORS.onSurfaceMuted }]}>{subtitle}</Text>
+=======
+                    <Text numberOfLines={1} style={styles.title}>{title}</Text>
+                    <Text numberOfLines={1} style={styles.subtitle}>{subtitle}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   </View>
                   <Ionicons name={playable ? 'play' : 'chevron-forward'} size={20} color={COLORS.green} />
                 </Pressable>
@@ -83,6 +116,7 @@ export default function RecentlyPlayed() {
         ) : (
           <View style={styles.empty}>
             <Ionicons name="time-outline" size={34} color={COLORS.green} />
+<<<<<<< HEAD
             <Text style={[styles.emptyTitle, needsLightText && { color: COLORS.cream }]}>No recent plays</Text>
             <Text style={[styles.emptyText, needsLightText && { color: COLORS.onSurfaceMuted }]}>Songs and playlists you play will appear here for 24 hours.</Text>
           </View>
@@ -95,6 +129,20 @@ export default function RecentlyPlayed() {
 const BASE_COLORS = { green: '#174d38', surfaceRaised: '#103b2d', ink: '#28251f', muted: '#817764', cream: '#fff8e9' };
 
 const createStyles = (COLORS) => StyleSheet.create({
+=======
+            <Text style={styles.emptyTitle}>No recent plays</Text>
+            <Text style={styles.emptyText}>Songs and playlists you play will appear here for 24 hours.</Text>
+          </View>
+        )}
+      </View>
+    </ImageBackground>
+  );
+}
+
+const COLORS = { green: '#174d38', ink: '#28251f', muted: '#817764', cream: '#fff8e9' };
+
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   background: { flex: 1 },
   screen: { flex: 1, paddingHorizontal: 20 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
@@ -104,7 +152,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   subheading: { color: COLORS.muted, fontFamily: 'NunitoSemiBold', fontSize: 12, marginTop: 1 },
   list: { gap: 5, paddingBottom: 20 },
   row: { minHeight: 70, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },
+<<<<<<< HEAD
   art: { width: 54, height: 54, borderRadius: 9, backgroundColor: COLORS.surfaceRaised },
+=======
+  art: { width: 54, height: 54, borderRadius: 9, backgroundColor: '#d9c7a4' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   details: { flex: 1, minWidth: 0 },
   title: { color: COLORS.ink, fontFamily: 'NunitoBold', fontSize: 14 },
   subtitle: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 12, marginTop: 2 },
@@ -112,4 +164,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   emptyTitle: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 17, marginTop: 10 },
   emptyText: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 13, lineHeight: 19, marginTop: 4, textAlign: 'center' },
 });
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

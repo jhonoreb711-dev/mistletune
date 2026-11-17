@@ -14,16 +14,25 @@ import { router, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayback } from './PlaybackContext';
 import SongArtwork from './SongArtwork';
+<<<<<<< HEAD
 import { useThemeStyles } from '../themes/ThemeProvider';
 
 export default function MiniPlayerOverlay() {
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+
+export default function MiniPlayerOverlay() {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [translateX] = useState(() => new Animated.Value(0));
+<<<<<<< HEAD
   const { currentTrack, playing, togglePlayback, stopPlayback, openQueueSheet, queueTracks } = usePlayback();
+=======
+  const { currentTrack, playing, togglePlayback, stopPlayback } = usePlayback();
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const bottomOffset = Math.max(insets.bottom, 8) + (pathname === '/RecentlyPlayed' ? 12 : 72);
 
   useEffect(() => {
@@ -36,9 +45,12 @@ export default function MiniPlayerOverlay() {
   }, []);
 
   const panResponder = useMemo(() => PanResponder.create({
+<<<<<<< HEAD
     onMoveShouldSetPanResponderCapture: (_event, gesture) => (
       Math.abs(gesture.dx) > 10 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.3
     ),
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     onMoveShouldSetPanResponder: (_event, gesture) => (
       Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy)
     ),
@@ -95,6 +107,7 @@ export default function MiniPlayerOverlay() {
           hitSlop={8}
           style={styles.control}
         >
+<<<<<<< HEAD
           <Ionicons name={playing ? 'pause' : 'play'} size={23} color={COLORS.green} />
         </Pressable>
         <Pressable
@@ -105,6 +118,9 @@ export default function MiniPlayerOverlay() {
           style={styles.control}
         >
           <Ionicons name="list" size={23} color={COLORS.green} />
+=======
+          <Ionicons name={playing ? 'pause' : 'play'} size={23} color="#164d38" />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -120,9 +136,13 @@ export default function MiniPlayerOverlay() {
   );
 }
 
+<<<<<<< HEAD
 const BASE_COLORS = { green: '#164d38' };
 
 const createStyles = (colors) => StyleSheet.create({
+=======
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   container: {
     position: 'absolute',
     left: 12,
@@ -145,7 +165,11 @@ const createStyles = (colors) => StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   trackButton: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
+<<<<<<< HEAD
   artwork: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.green },
+=======
+  artwork: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#164d38' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   trackText: { flex: 1, minWidth: 0 },
   title: { color: '#29251e', fontFamily: 'NunitoBold', fontSize: 13 },
   artist: { color: '#837866', fontFamily: 'NunitoRegular', fontSize: 11, marginTop: 1 },

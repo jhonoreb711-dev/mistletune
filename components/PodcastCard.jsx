@@ -4,7 +4,10 @@ import { Image } from 'expo-image';
 import { createVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+<<<<<<< HEAD
 import { useThemeStyles } from '../themes/ThemeProvider';
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
 // One temporary decoder for the entire app, released after each still image.
 let previewQueue = Promise.resolve();
@@ -75,8 +78,12 @@ export function podcastTitle(video) {
   return (video.title || video.name || 'Podcast').replace(/\.[a-z0-9]{2,5}$/i, '');
 }
 
+<<<<<<< HEAD
 export default function PodcastCard({ video, onPress, onRename, horizontal = false, collection = null, albumSized = false, onDelete }) {
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+export default function PodcastCard({ video, onPress, onRename, horizontal = false }) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [preview, setPreview] = useState(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -87,6 +94,7 @@ export default function PodcastCard({ video, onPress, onRename, horizontal = fal
     });
     return () => { active = false; };
   }, [video.id, video.uri, video.coverUri]);
+<<<<<<< HEAD
   const description = collection?.description || video.podcastDescription || video.description;
   const episodeTitle = video.podcastTitle && video.episodeNumber ? `${video.title || video.podcastTitle} · Episode ${video.episodeNumber}` : video.episodeNumber ? `Episode ${video.episodeNumber} · ${podcastTitle(video)}` : podcastTitle(video);
   const seconds = Math.floor(preview?.duration || 0);
@@ -106,10 +114,28 @@ export default function PodcastCard({ video, onPress, onRename, horizontal = fal
       </View>
       {onRename && <Pressable accessibilityRole="button" accessibilityLabel={`Rename ${podcastTitle(video)}`} hitSlop={8} onPress={(event) => { event.stopPropagation(); onRename(); }} style={{ padding: 6 }}><Ionicons name="pencil-outline" size={18} color={COLORS.ember} /></Pressable>}
       {!horizontal && <Ionicons name={collection ? 'chevron-forward-circle' : 'play-circle'} size={34} color={COLORS.ember} />}
+=======
+  const seconds = Math.floor(preview?.duration || 0);
+  const duration = seconds > 0 ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : failed ? 'Could not read video' : 'Loading duration…';
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`Play podcast ${podcastTitle(video)}`}
+      onPress={onPress} style={({ pressed }) => [styles.card, horizontal ? styles.tile : styles.row, pressed && { opacity: 0.75 }]}>
+      <View style={[styles.thumbnail, horizontal && styles.tileThumbnail]}>
+        {video.coverUri || preview?.image ? <Image source={video.coverUri ? { uri: video.coverUri } : preview.image} contentFit="cover" style={StyleSheet.absoluteFill} /> :
+          <Ionicons name="videocam-outline" size={28} color="#f4c86a" />}
+      </View>
+      <View style={styles.details}>
+        <Text numberOfLines={2} style={styles.title}>{podcastTitle(video)}</Text>
+        <Text numberOfLines={1} style={styles.subtitle}>Podcast · {duration}</Text>
+      </View>
+      {onRename && <Pressable accessibilityRole="button" accessibilityLabel={`Rename ${podcastTitle(video)}`} hitSlop={8} onPress={(event) => { event.stopPropagation(); onRename(); }} style={{ padding: 6 }}><Ionicons name="pencil-outline" size={18} color="#f4c86a" /></Pressable>}
+      {!horizontal && <Ionicons name="play-circle" size={34} color="#f4c86a" />}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     </Pressable>
   );
 }
 
+<<<<<<< HEAD
 const BASE_COLORS = { green: '#164d38', ember: '#f4c86a' };
 
 const createStyles = (colors) => StyleSheet.create({
@@ -127,4 +153,15 @@ const createStyles = (colors) => StyleSheet.create({
   details: { flex: 1, minWidth: 0 },
   title: { color: '#fff8e9', fontFamily: 'NunitoBold', fontSize: 13, lineHeight: 18, paddingHorizontal: 6 },
   subtitle: { color: colors.ember, fontFamily: 'NunitoSemiBold', fontSize: 11, marginTop: 6, paddingHorizontal: 6 },
+=======
+const styles = StyleSheet.create({
+  card: { borderRadius: 14, borderWidth: 1, borderColor: 'rgba(244,200,106,0.6)', backgroundColor: 'rgba(5,35,24,0.92)' },
+  row: { flexDirection: 'row', alignItems: 'center', padding: 10, gap: 12, minHeight: 100 },
+  tile: { width: 166, overflow: 'hidden', paddingBottom: 10 },
+  thumbnail: { width: 96, height: 72, borderRadius: 8, backgroundColor: '#164d38', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  tileThumbnail: { width: '100%', height: 100, borderRadius: 0, marginBottom: 8 },
+  details: { flex: 1, minWidth: 0 },
+  title: { color: '#fff8e9', fontFamily: 'NunitoBold', fontSize: 13, lineHeight: 18, paddingHorizontal: 6 },
+  subtitle: { color: '#f4c86a', fontFamily: 'NunitoSemiBold', fontSize: 11, marginTop: 6, paddingHorizontal: 6 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 });

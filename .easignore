@@ -12,8 +12,12 @@ android/.gradle/
 android/build/
 android/app/build/
 assets/models/*.part
+<<<<<<< HEAD
 server/.venv/
 server/.cache/
 server/config.json
 server/*.log
 # Qwen weights are downloaded only by the local Python server, not app builds.
+=======
+# Deliberately include assets/models/*.pte and *.bin in the EAS upload.
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

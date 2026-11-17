@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MistleTunes
 
 A local music player built with Expo and React Native, with word-synchronized lyrics.
@@ -34,3 +35,6 @@ reliably. See [the lyrics timing guide](docs/lyric-timing.md) for details.
 npm run lint
 npm run test:lyrics
 ```
+=======
+# My New Project 
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

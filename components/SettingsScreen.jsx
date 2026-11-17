@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+=======
+import { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   Pressable,
   Platform,
   ScrollView,
@@ -9,12 +15,17 @@ import {
   Text,
   View,
 } from 'react-native';
+<<<<<<< HEAD
 import ThemeImageBackground from './ThemeImageBackground';
 import ThemedActionDialog from './PodcastActionDialog';
+=======
+import { Image, ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlayback } from './PlaybackContext';
+<<<<<<< HEAD
 
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
 import ThemePicker from '../themes/ThemePicker';
@@ -29,6 +40,24 @@ export default function SettingsScreen() {
   const [isScanning, setIsScanning] = useState(false);
   const [batchProgress, setBatchProgress] = useState(null);
   const [isChoosingVideo, setIsChoosingVideo] = useState(false);
+=======
+import { getPodcastVideos, savePodcastVideos, pickPodcastCover } from './podcastVideoStorage';
+import {
+  pickAndSavePodcastVideos,
+  pickAndReplacePodcastVideo,
+  deleteVideoFile,
+} from './videoFileService';
+
+import settingsBackground from '../assets/Steampunk_Christmas_Music_Workshop.gif';
+
+export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [isChoosingVideo, setIsChoosingVideo] = useState(false);
+  const [podcastVideos, setPodcastVideos] = useState([]);
+  const [isChoosingPodcastVideos, setIsChoosingPodcastVideos] = useState(false);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const scanInProgress = useRef(false);
   const {
     tracks,
@@ -38,9 +67,93 @@ export default function SettingsScreen() {
     musicFolderName,
     chooseMusicFolder,
     addAudioFiles,
+<<<<<<< HEAD
     clearLibrary,
   } = usePlayback();
 
+=======
+  } = usePlayback();
+
+  useEffect(() => {
+    getPodcastVideos().then(setPodcastVideos);
+  }, []);
+
+  const choosePodcastVideos = async (existingVideo = null) => {
+    if (isChoosingPodcastVideos) return;
+    setIsChoosingPodcastVideos(true);
+    setStatusMessage('Opening video picker...');
+    try {
+      if (existingVideo) {
+        const replaced = await pickAndReplacePodcastVideo(existingVideo);
+        if (!replaced) {
+          setStatusMessage('No replacement video selected.');
+          return;
+        }
+        const updatedVideos = podcastVideos.map((v) => (v.id === existingVideo.id ? replaced : v));
+        await savePodcastVideos(updatedVideos);
+        setPodcastVideos(updatedVideos);
+        setStatusMessage(`Updated podcast video: ${replaced.name}`);
+      } else {
+        const newVideos = await pickAndSavePodcastVideos(true);
+        if (!newVideos || !newVideos.length) {
+          setStatusMessage('No podcast videos selected.');
+          return;
+        }
+        const updatedVideos = [...podcastVideos, ...newVideos];
+        await savePodcastVideos(updatedVideos);
+        setPodcastVideos(updatedVideos);
+        setStatusMessage(`Added ${newVideos.length} podcast ${newVideos.length === 1 ? 'video' : 'videos'}.`);
+      }
+    } catch (error) {
+      setStatusMessage(error.message || 'Could not update podcast videos.');
+    } finally {
+      setIsChoosingPodcastVideos(false);
+    }
+  };
+
+  const removePodcastVideo = (video) => {
+    Alert.alert(
+      'Remove Video',
+      `Are you sure you want to delete "${video.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedVideos = podcastVideos.filter((item) => item.id !== video.id);
+            try {
+              await savePodcastVideos(updatedVideos);
+              setPodcastVideos(updatedVideos);
+              await deleteVideoFile(video.uri);
+              if (video.coverUri) await deleteVideoFile(video.coverUri);
+              setStatusMessage(`Removed podcast video: ${video.name}`);
+            } catch (error) {
+              setStatusMessage(error.message || 'Could not remove that podcast video.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const changePodcastCover = async (video) => {
+    if (isChoosingPodcastVideos) return;
+    setIsChoosingPodcastVideos(true);
+    try {
+      const updated = await pickPodcastCover(video.id);
+      if (updated) {
+        setPodcastVideos(updated);
+        setStatusMessage(`Cover updated for ${video.title || video.name}`);
+      }
+    } catch (error) {
+      setStatusMessage(error.message || 'Could not save the podcast cover.');
+    } finally {
+      setIsChoosingPodcastVideos(false);
+    }
+  };
+
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const handleChooseHomeVideo = async () => {
     if (isChoosingVideo) return;
     setIsChoosingVideo(true);
@@ -72,6 +185,7 @@ export default function SettingsScreen() {
     if (scanInProgress.current) return;
     scanInProgress.current = true;
     setIsScanning(true);
+<<<<<<< HEAD
     setBatchProgress(null);
     setStatusMessage('Please select your music folder.');
     try {
@@ -99,6 +213,17 @@ export default function SettingsScreen() {
       scanInProgress.current = false;
       setIsScanning(false);
       setBatchProgress(null);
+=======
+    setStatusMessage('Choose a folder and tap Use this folder. Your songs will sync automatically.');
+    try {
+      const { folderName, trackCount } = await chooseMusicFolder();
+      setStatusMessage(folderName + ': ' + trackCount + (trackCount === 1 ? ' track synced.' : ' tracks synced.'));
+    } catch (error) {
+      setStatusMessage(error.message || 'Could not sync the selected music folder.');
+    } finally {
+      scanInProgress.current = false;
+      setIsScanning(false);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     }
   };
 
@@ -106,6 +231,7 @@ export default function SettingsScreen() {
     if (scanInProgress.current) return;
     scanInProgress.current = true;
     setIsScanning(true);
+<<<<<<< HEAD
     setBatchProgress(null);
     try {
       const result = await addAudioFiles((progressInfo) => {
@@ -145,6 +271,21 @@ export default function SettingsScreen() {
 
   return (
     <ThemeImageBackground source={theme.assets.settings} contentFit="cover" autoplay style={styles.background}>
+=======
+    try {
+      const count = await addAudioFiles();
+      setStatusMessage(count + (count === 1 ? ' track in your library.' : ' tracks in your library.'));
+    } catch (error) {
+      setStatusMessage(error.message || 'Could not add audio files.');
+    } finally {
+      scanInProgress.current = false;
+      setIsScanning(false);
+    }
+  };
+
+  return (
+    <ImageBackground source={settingsBackground} contentFit="cover" autoplay style={styles.background}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <StatusBar barStyle="light-content" />
       <View style={styles.screen}>
         <View style={[styles.content, { paddingTop: insets.top + 8 }]}>
@@ -161,7 +302,11 @@ export default function SettingsScreen() {
             <View style={styles.headerGear}><Ionicons name="settings" size={23} color={COLORS.gold} /></View>
           </View>
 
+<<<<<<< HEAD
           <Text style={styles.intro}>Your music, your mood.</Text>
+=======
+          <Text style={styles.intro}>Manage your music library.</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           <View style={styles.ornamentDivider}>
             <View style={styles.ornamentLine} />
             <Text style={styles.ornamentText}>✦  ♫  ✦</Text>
@@ -174,7 +319,10 @@ export default function SettingsScreen() {
           ) : null}
         </View>
 
+<<<<<<< HEAD
         {themePickerVisible && <ThemePicker onClose={() => setThemePickerVisible(false)} />}
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         <ScrollView
           style={styles.settingsScroll}
           contentContainerStyle={[styles.settingsScrollContent, { paddingBottom: Math.max(insets.bottom, 8) + 76 }]}
@@ -182,6 +330,7 @@ export default function SettingsScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.sectionBannerWrap}>
+<<<<<<< HEAD
             <View style={styles.sectionBannerIcon}><Ionicons name="color-palette-outline" size={22} color={COLORS.gold} /></View>
             <Text style={styles.sectionBannerText}>Appearance</Text>
           </View>
@@ -211,6 +360,27 @@ export default function SettingsScreen() {
                 ? 'Tap below to select your folder. Your songs and lyrics will be set up automatically.'
                 : 'Supported formats: MP3, M4A, WAV, AAC, OGG, and FLAC.'}
             </Text>
+=======
+            <View style={styles.sectionBannerIcon}><Ionicons name="musical-notes" size={22} color={COLORS.gold} /></View>
+            <Text style={styles.sectionBannerText}>Music library</Text>
+            <Ionicons name="snow" size={16} color={COLORS.gold} style={styles.sectionBannerFlourish} />
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.fieldLabel}>{Platform.OS === 'android' ? 'Music folder' : 'Add music'}</Text>
+            <Text style={styles.helperText}>
+              {Platform.OS === 'android'
+                ? musicFolderName ? `Folder: ${musicFolderName}` : 'Choose the folder where your songs are saved.'
+                : 'Choose audio files from your phone, then they will be added to your library.'}
+            </Text>
+            <Text style={styles.helperText}>
+              {Platform.OS === 'android'
+                ? musicFolderName
+                  ? 'Choose this folder again to sync any newly added songs automatically.'
+                  : 'Tap Use this folder and allow access. Songs sync automatically.'
+                : 'Supported formats: MP3, M4A, WAV, AAC, OGG, and FLAC.'}
+            </Text>
+            <Text style={styles.helperText}>Songs are copied into the app. Album tags group them into albums.</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             {Platform.OS === 'android' ? (
               <Pressable
                 accessibilityRole="button"
@@ -219,7 +389,11 @@ export default function SettingsScreen() {
                 style={({ pressed }) => [styles.secondaryButton, styles.folderButton, pressed && styles.pressed]}
               >
                 <Ionicons name="folder-open-outline" size={19} color={COLORS.cream} />
+<<<<<<< HEAD
                 <Text style={styles.secondaryButtonText}>{isScanning ? 'Adding music...' : musicFolderName ? 'Change music folder' : 'Choose music folder'}</Text>
+=======
+                <Text style={styles.secondaryButtonText}>{isScanning ? 'Selecting / syncing music...' : musicFolderName ? 'Choose / sync music folder' : 'Choose music folder'}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </Pressable>
             ) : null}
             {Platform.OS !== 'android' ? <Pressable
@@ -229,6 +403,7 @@ export default function SettingsScreen() {
               style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
             >
               <Ionicons name={isScanning ? 'hourglass-outline' : 'refresh-outline'} size={19} color={COLORS.cream} />
+<<<<<<< HEAD
               <Text style={styles.secondaryButtonText}>{isScanning ? 'Adding music...' : 'Add songs'}</Text>
             </Pressable> : null}
             {tracks.length > 0 && !isScanning ? (
@@ -282,6 +457,11 @@ export default function SettingsScreen() {
               </View>
             )}
             <Text style={styles.helperText}>{tracks.length} {tracks.length === 1 ? 'song' : 'songs'} in your library.</Text>
+=======
+              <Text style={styles.secondaryButtonText}>{isScanning ? 'Adding music...' : 'Add audio files'}</Text>
+            </Pressable> : null}
+            <Text style={styles.helperText}>{tracks.length} playable {tracks.length === 1 ? 'track' : 'tracks'} in your library.</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           </View>
 
           {Platform.OS !== 'web' ? (
@@ -289,9 +469,15 @@ export default function SettingsScreen() {
               <View style={styles.sectionBannerWrap}>
                 <View style={styles.sectionBannerIcon}><Ionicons name="videocam" size={22} color={COLORS.gold} /></View>
                 <Text style={styles.sectionBannerText}>Home screen video</Text>
+<<<<<<< HEAD
                 <Ionicons name={theme.icon} size={16} color={COLORS.gold} style={styles.sectionBannerFlourish} />
               </View>
               <View style={[styles.card, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderColor: theme.colors.surfaceBorder }]}>
+=======
+                <Ionicons name="snow" size={16} color={COLORS.gold} style={styles.sectionBannerFlourish} />
+              </View>
+              <View style={styles.card}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 <Text style={styles.fieldLabel}>Current video</Text>
                 <Text style={styles.helperText} numberOfLines={1}>{homeVideoName}</Text>
                 <Text style={styles.helperText}>Choose a video from your device. It will play on Home when no song is playing.</Text>
@@ -317,6 +503,7 @@ export default function SettingsScreen() {
               <View style={styles.sectionBannerWrap}>
                 <View style={styles.sectionBannerIcon}><Ionicons name="film" size={22} color={COLORS.gold} /></View>
                 <Text style={styles.sectionBannerText}>Podcast videos</Text>
+<<<<<<< HEAD
                 <Ionicons name={theme.icon} size={16} color={COLORS.gold} style={styles.sectionBannerFlourish} />
               </View>
               <View style={[styles.card, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderColor: theme.colors.surfaceBorder }]}>
@@ -331,13 +518,68 @@ export default function SettingsScreen() {
                   <Text style={styles.secondaryButtonText}>Add podcast videos</Text>
                 </Pressable>
 
+=======
+                <Ionicons name="snow" size={16} color={COLORS.gold} style={styles.sectionBannerFlourish} />
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.fieldLabel}>Your podcast collection</Text>
+                <Text style={styles.helperText}>Add videos here. They will appear in the Podcast list.</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isChoosingPodcastVideos}
+                  onPress={() => choosePodcastVideos()}
+                  style={({ pressed }) => [styles.secondaryButton, styles.folderButton, pressed && styles.pressed, isChoosingPodcastVideos && styles.disabled]}
+                >
+                  <Ionicons name="add-circle-outline" size={19} color={COLORS.cream} />
+                  <Text style={styles.secondaryButtonText}>{isChoosingPodcastVideos ? 'Opening videos...' : 'Add podcast videos'}</Text>
+                </Pressable>
+                {podcastVideos.length ? (
+                  <View style={styles.podcastVideoList}>
+                    {podcastVideos.map((video) => (
+                      <View key={video.id} style={styles.podcastVideoRow}>
+                        <View style={[styles.podcastVideoIcon, { overflow: 'hidden' }]}>{video.coverUri ? <Image source={{ uri: video.coverUri }} contentFit="cover" style={StyleSheet.absoluteFill} /> : <Ionicons name="videocam" size={18} color={COLORS.gold} />}</View>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text numberOfLines={1} style={styles.podcastVideoName}>{video.title || video.name}</Text>
+                          <Pressable accessibilityRole="button" accessibilityLabel={`Edit cover for ${video.title || video.name}`} disabled={isChoosingPodcastVideos} onPress={() => changePodcastCover(video)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 32 }}>
+                            <Ionicons name="image-outline" size={14} color={COLORS.green} />
+                            <Text style={{ color: COLORS.green, fontFamily: 'NunitoBold', fontSize: 12 }}>{video.coverUri ? 'Change cover' : 'Add cover'}</Text>
+                          </Pressable>
+                        </View>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Replace ${video.name}`}
+                          disabled={isChoosingPodcastVideos}
+                          onPress={() => choosePodcastVideos(video)}
+                          style={styles.podcastVideoAction}
+                        >
+                          <Ionicons name="create-outline" size={19} color={COLORS.green} />
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove ${video.name}`}
+                          onPress={() => removePodcastVideo(video)}
+                          style={styles.podcastVideoAction}
+                        >
+                          <Ionicons name="trash-outline" size={18} color={COLORS.red} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.helperText}>No podcast videos added yet.</Text>
+                )}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </View>
             </>
           ) : null}
 
         </ScrollView>
 
+<<<<<<< HEAD
         <View style={[styles.bottomBar, theme.id === 'default' && { backgroundColor: theme.colors.surfaceRaised, borderTopColor: theme.colors.surfaceBorder }, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+=======
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           {[
             { label: 'Home', icon: 'home' },
             { label: 'Search', icon: 'search' },
@@ -361,15 +603,22 @@ export default function SettingsScreen() {
                 <Ionicons
                   name={selected ? tab.icon : `${tab.icon}-outline`}
                   size={21}
+<<<<<<< HEAD
                   color={theme.id === 'default' ? (selected ? theme.colors.cream : theme.colors.onSurfaceMuted) : selected ? COLORS.red : COLORS.ink}
                 />
                 <Text style={[styles.navLabel, selected && styles.navLabelSelected, theme.id === 'default' && { color: theme.colors.cream }]}>{tab.label}</Text>
+=======
+                  color={selected ? COLORS.red : COLORS.ink}
+                />
+                <Text style={[styles.navLabel, selected && styles.navLabelSelected]}>{tab.label}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               </Pressable>
             );
           })}
         </View>
 
       </View>
+<<<<<<< HEAD
       <ThemedActionDialog visible={clearDialogVisible} title="Start fresh?"
         message="Clear imported songs and cached lyrics from MistleTunes to make room for a fresh collection."
         icon="trash-outline" destructive confirmLabel="Clear library"
@@ -390,6 +639,13 @@ export default function SettingsScreen() {
 }
 
 const DEFAULT_COLORS = {
+=======
+    </ImageBackground>
+  );
+}
+
+const COLORS = {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   green: '#07502c',
   red: '#a20d1b',
   gold: '#f2bb4f',
@@ -399,7 +655,11 @@ const DEFAULT_COLORS = {
   line: '#b88232',
 };
 
+<<<<<<< HEAD
 const createStyles = (COLORS) => StyleSheet.create({
+=======
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   background: { flex: 1, width: '100%' },
   screen: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingHorizontal: 20 },
@@ -412,7 +672,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 5, marginTop: 24 },
   backButton: { width: 34, height: 36, justifyContent: 'center', marginRight: 4 },
   heading: { flex: 1, color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 28, textShadowColor: COLORS.gold, textShadowRadius: 7 },
+<<<<<<< HEAD
   headerGear: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: COLORS.surfaceDeep, borderWidth: 2, borderColor: COLORS.gold, shadowColor: COLORS.gold, shadowOpacity: 0.65, shadowRadius: 7, elevation: 3 },
+=======
+  headerGear: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: 'rgba(0,34,18,0.8)', borderWidth: 2, borderColor: COLORS.gold, shadowColor: COLORS.gold, shadowOpacity: 0.65, shadowRadius: 7, elevation: 3 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   intro: { color: COLORS.cream, fontFamily: 'NunitoSemiBold', fontSize: 14, textAlign: 'center', marginBottom: 5, textShadowColor: 'rgba(0,0,0,0.75)', textShadowRadius: 4 },
   ornamentDivider: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, marginBottom: 10 },
   ornamentLine: { flex: 1, height: 1.5, backgroundColor: COLORS.gold },
@@ -427,6 +691,7 @@ const createStyles = (COLORS) => StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: COLORS.line, marginVertical: 7 },
   helperText: { color: COLORS.ink, fontFamily: 'NunitoRegular', fontSize: 12, lineHeight: 17, marginTop: 3, marginBottom: 8 },
   disabled: { opacity: 0.6 },
+<<<<<<< HEAD
   secondaryButton: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, paddingHorizontal: 12, borderWidth: 2, borderColor: COLORS.gold, borderRadius: 24, backgroundColor: COLORS.green, shadowColor: COLORS.gold, shadowOpacity: 0.32, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   folderButton: { marginBottom: 10 },
   clearButton: { backgroundColor: COLORS.red, marginBottom: 10 },
@@ -440,5 +705,17 @@ const createStyles = (COLORS) => StyleSheet.create({
   batchProgressTrack: { height: 7, borderRadius: 4, backgroundColor: COLORS.surfaceTint, overflow: 'hidden', marginTop: 10 },
   batchProgressFill: { height: '100%', backgroundColor: COLORS.green, borderRadius: 4 },
   batchNote: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 11, lineHeight: 15, marginTop: 8 },
+=======
+  podcastVideoList: { gap: 7, marginTop: 2 },
+  podcastVideoRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 8, borderRadius: 12, backgroundColor: 'rgba(7,80,44,0.08)' },
+  podcastVideoIcon: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: COLORS.green },
+  podcastVideoName: { flex: 1, minWidth: 0, color: COLORS.ink, fontFamily: 'NunitoSemiBold', fontSize: 12 },
+  podcastVideoAction: { width: 32, height: 38, alignItems: 'center', justifyContent: 'center' },
+  secondaryButton: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, paddingHorizontal: 12, borderWidth: 2, borderColor: COLORS.gold, borderRadius: 24, backgroundColor: COLORS.green, shadowColor: COLORS.gold, shadowOpacity: 0.32, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  folderButton: { marginBottom: 10 },
+  secondaryButtonText: { color: COLORS.cream, fontFamily: 'NunitoExtraBold', fontSize: 13 },
+  statusBox: { marginTop: 10, padding: 12, borderRadius: 14, borderWidth: 1.5, borderColor: COLORS.gold, backgroundColor: COLORS.cream },
+  statusText: { color: COLORS.green, fontFamily: 'NunitoSemiBold', fontSize: 12 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   pressed: { opacity: 0.82 },
 });

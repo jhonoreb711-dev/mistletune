@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import highwayGif from '../assets/CD_Highway_box.gif';
+<<<<<<< HEAD
 import { useThemeStyles } from '../themes/ThemeProvider';
 
 export default function HighwayPlayerArtwork({ width, height, active, artwork, onEditCover, editable }) {
   const { styles } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+
+export default function HighwayPlayerArtwork({ width, height, active, artwork, onEditCover, editable }) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const imageRef = useRef(null);
   const [rotation] = useState(() => new Animated.Value(0));
   // Follow the hub through the same proportional scaling/cropping as the GIF.
@@ -62,10 +67,15 @@ export default function HighwayPlayerArtwork({ width, height, active, artwork, o
   );
 }
 
+<<<<<<< HEAD
 const BASE_COLORS = {
   greenDeep: '#071a16',
 };
 
 const createStyles = (colors) => StyleSheet.create({
   frame: { overflow: 'hidden', borderRadius: 18, backgroundColor: colors.greenDeep, borderWidth: 1, borderColor: 'rgba(244,200,106,0.5)' },
+=======
+const styles = StyleSheet.create({
+  frame: { overflow: 'hidden', borderRadius: 18, backgroundColor: '#071a16', borderWidth: 1, borderColor: 'rgba(244,200,106,0.5)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 });

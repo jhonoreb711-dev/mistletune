@@ -1,5 +1,8 @@
 node_modules/
+<<<<<<< HEAD
 server/config.json
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 .expo/
 dist/
 .env
@@ -13,9 +16,13 @@ android/.gradle/
 android/build/
 android/app/build/
 
+<<<<<<< HEAD
 *.exe
 
 # Download before building; model binaries are bundled in the APK via Metro.
+=======
+# Large model weights are provisioned on the build machine by npm run lyrics:models.
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 assets/models/*.pte
 assets/models/*.bin
 assets/models/*.part

@@ -1,5 +1,8 @@
 export function activeSegmentIndex(segments, seconds) {
+<<<<<<< HEAD
   'worklet';
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   if (!Number.isFinite(seconds)) return -1;
   let low = 0;
   let high = segments.length - 1;
@@ -9,6 +12,7 @@ export function activeSegmentIndex(segments, seconds) {
     if (segments[mid].start <= seconds) { candidate = mid; low = mid + 1; }
     else high = mid - 1;
   }
+<<<<<<< HEAD
   return candidate >= 0 && seconds < segments[candidate].end ? candidate : -1;
 }
 
@@ -30,6 +34,9 @@ export function lyricTimeAt(boundaries, seconds) {
     else high = mid - 1;
   }
   return boundaries[high] ?? 0;
+=======
+  return candidate >= 0 && seconds <= segments[candidate].end ? candidate : -1;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 }
 
 export function importedSegments(lines, duration) {

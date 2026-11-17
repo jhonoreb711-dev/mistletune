@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import SongArtwork from './SongArtwork';
+<<<<<<< HEAD
 import { useThemeStyles } from '../themes/ThemeProvider';
 
 const BASE_COLORS = { greenDeep: '#101915', greenPanelAlt: '#164d38', greenDark: '#253b31', gold: '#f4c86a', goldMuted: '#e6c779', red: '#8e1420', cream: '#fff8e9', goldBorder: '#b58a3c' };
@@ -17,6 +18,10 @@ const createStyles = (colors) => StyleSheet.create({
 
 export default function SpinningRecord({ artwork, size, spinning }) {
   const { styles } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+
+export default function SpinningRecord({ artwork, size, spinning }) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [rotation] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -50,3 +55,16 @@ export default function SpinningRecord({ artwork, size, spinning }) {
     </View>
   );
 }
+<<<<<<< HEAD
+=======
+
+const styles = StyleSheet.create({
+  plinth: { alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: 'rgba(7,35,27,0.78)', borderWidth: 1, borderColor: 'rgba(244,200,106,0.45)', padding: 12 },
+  disc: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 999, backgroundColor: '#101915', borderWidth: 3, borderColor: '#253b31' },
+  groove: { position: 'absolute', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(244,200,106,0.15)' },
+  label: { width: '49%', height: '49%', borderRadius: 999, backgroundColor: '#164d38', overflow: 'hidden' },
+  spindle: { position: 'absolute', width: 9, height: 9, borderRadius: 5, backgroundColor: '#fff8e9', borderWidth: 2, borderColor: '#b58a3c' },
+  arm: { position: 'absolute', width: 6, height: '43%', right: '16%', top: '8%', backgroundColor: '#e6c779', borderRadius: 4, transform: [{ rotate: '-25deg' }] },
+  needle: { position: 'absolute', bottom: -4, left: -3, width: 12, height: 24, borderRadius: 3, backgroundColor: '#8e1420', borderWidth: 1, borderColor: '#e6c779' },
+});
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

@@ -16,7 +16,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+<<<<<<< HEAD
 import ThemeImageBackground from './ThemeImageBackground';
+=======
+import { ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from './PlaybackContext';
 import {
   parseSongRecommendations,
@@ -35,9 +39,15 @@ import {
 import { chatWithNlp } from './nlpService';
 import { getPodcastVideos } from './podcastVideoStorage';
 
+<<<<<<< HEAD
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
 
 const BASE_COLORS = {
+=======
+import chatBg from '../assets/christmas_bg3.png';
+
+const COLORS = {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   green: '#0f3d28',
   darkGreen: '#072016',
   red: '#8e1420',
@@ -49,7 +59,10 @@ const BASE_COLORS = {
   aiHue: 'rgba(10,55,32,0.92)',
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 function formatSessionDate(timestamp) {
   if (!timestamp) return '';
   const diff = Date.now() - timestamp;
@@ -67,7 +80,10 @@ function formatSessionDate(timestamp) {
 }
 
 function TypingDots() {
+<<<<<<< HEAD
   const { colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [dot1] = useState(() => new Animated.Value(0));
   const [dot2] = useState(() => new Animated.Value(0));
   const [dot3] = useState(() => new Animated.Value(0));
@@ -91,7 +107,11 @@ function TypingDots() {
   return (
     <View style={typingStyles.row}>
       {[dot1, dot2, dot3].map((dot, i) => (
+<<<<<<< HEAD
         <Animated.View key={i} style={[typingStyles.dot, { backgroundColor: COLORS.gold, transform: [{ translateY: dot }] }]} />
+=======
+        <Animated.View key={i} style={[typingStyles.dot, { transform: [{ translateY: dot }] }]} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       ))}
     </View>
   );
@@ -99,11 +119,18 @@ function TypingDots() {
 
 const typingStyles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 2 },
+<<<<<<< HEAD
   dot: { width: 8, height: 8, borderRadius: 4 },
 });
 
 function SongChip({ title, track, onPress }) {
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold },
+});
+
+function SongChip({ title, track, onPress }) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   return (
     <Pressable
       accessibilityRole="button"
@@ -111,7 +138,11 @@ function SongChip({ title, track, onPress }) {
       onPress={() => onPress(title, track)}
       style={({ pressed }) => [styles.songChip, pressed && styles.songChipPressed, !track && styles.songChipDisabled]}
     >
+<<<<<<< HEAD
       <Ionicons name="musical-note" size={12} color={track ? COLORS.gold : COLORS.onSurfaceMuted} />
+=======
+      <Ionicons name="musical-note" size={12} color={track ? COLORS.gold : COLORS.muted} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <Text numberOfLines={1} style={[styles.songChipText, !track && styles.songChipTextDisabled]}>
         {title}
       </Text>
@@ -121,7 +152,10 @@ function SongChip({ title, track, onPress }) {
 }
 
 function ChatMessage({ message, tracks, onSongPress, onSpeak, isSpeakingMessage }) {
+<<<<<<< HEAD
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const isUser = message.role === 'user';
   const isAI = message.role === 'assistant';
   const isSystem = message.role === 'system';
@@ -136,6 +170,7 @@ function ChatMessage({ message, tracks, onSongPress, onSpeak, isSpeakingMessage 
 
   // If assistant message is awaiting its first token, show typing dots directly in its bubble
   if (isAI && !message.content) {
+<<<<<<< HEAD
       return (
         <View style={styles.msgRow}>
           <View style={styles.aiAvatar}>
@@ -143,6 +178,15 @@ function ChatMessage({ message, tracks, onSongPress, onSpeak, isSpeakingMessage 
           </View>
           <View style={[styles.bubble, styles.bubbleAI, styles.typingBubble]}>
             <TypingDots />
+=======
+    return (
+      <View style={styles.msgRow}>
+        <View style={styles.aiAvatar}>
+          <Ionicons name="musical-notes" size={16} color={COLORS.gold} />
+        </View>
+        <View style={[styles.bubble, styles.bubbleAI, styles.typingBubble]}>
+          <TypingDots />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         </View>
       </View>
     );
@@ -154,10 +198,17 @@ function ChatMessage({ message, tracks, onSongPress, onSpeak, isSpeakingMessage 
   return (
     <View style={[styles.msgRow, isUser && styles.msgRowUser]}>
       {isAI && (
+<<<<<<< HEAD
               <View style={styles.aiAvatar}>
                 <Ionicons name="musical-notes" size={16} color={COLORS.gold} />
               </View>
             )}
+=======
+        <View style={styles.aiAvatar}>
+          <Ionicons name="musical-notes" size={16} color={COLORS.gold} />
+        </View>
+      )}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
       <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAI]}>
         <Text style={[styles.bubbleText, isUser && styles.bubbleTextUser]}>
           {displayText}
@@ -223,8 +274,11 @@ function getSpeechRecognitionModule() {
 }
 
 export default function ChatBot() {
+<<<<<<< HEAD
   const { theme } = useTheme();
   const { styles, colors: COLORS } = useThemeStyles(createStyles, BASE_COLORS);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const [visible, setVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [sessionsList, setSessionsList] = useState([]);
@@ -245,9 +299,15 @@ export default function ChatBot() {
   const voiceSessionRef = useRef(null);
   const [voiceMessage, setVoiceMessage] = useState(null);
   const scrollRef = useRef(null);
+<<<<<<< HEAD
     const inputRef = useRef(null);
     const insets = useSafeAreaInsets();
     const { tracks, setSpeechActive } = usePlayback();
+=======
+  const inputRef = useRef(null);
+  const insets = useSafeAreaInsets();
+  const { tracks, setSpeechActive } = usePlayback();
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   const [pulse] = useState(() => new Animated.Value(1));
 
@@ -786,7 +846,11 @@ export default function ChatBot() {
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+<<<<<<< HEAD
           <ThemeImageBackground source={theme.assets.chat} contentFit="cover" autoplay isAnimated style={styles.chatScreen}>
+=======
+          <ImageBackground source={chatBg} contentFit="cover" style={styles.chatScreen}>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
             {/* Header with ChatGPT/Claude style conversation navigation */}
             <View style={[styles.chatHeader, { paddingTop: insets.top + 10 }]}>
               {/* Menu button to open Conversations list */}
@@ -885,7 +949,11 @@ export default function ChatBot() {
                 value={input}
                 onChangeText={setInput}
                 placeholder={isListening ? 'Listening... pause to send' : 'Tell me your mood...'}
+<<<<<<< HEAD
                 placeholderTextColor={COLORS.gold}
+=======
+                placeholderTextColor={isListening ? COLORS.red : COLORS.muted}
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                 style={styles.textInput}
                 multiline
                 maxLength={300}
@@ -909,6 +977,7 @@ export default function ChatBot() {
 
               {/* Keep the stop button visible as speech fills the input. */}
               {(isListening || !input.trim()) && !isTyping && !isSpeaking && (
+<<<<<<< HEAD
                               <Pressable
                                 accessibilityRole="button"
                                 accessibilityLabel={isListening ? 'Finish speaking and send' : 'Speak a message and send automatically'}
@@ -918,6 +987,14 @@ export default function ChatBot() {
                                   isListening && styles.micButtonRecording,
                                 ]}
                               >
+=======
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={isListening ? 'Finish speaking and send' : 'Speak a message and send automatically'}
+                  onPress={isListening ? finishListening : startListening}
+                  style={[styles.micButton, isListening && styles.micButtonRecording]}
+                >
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
                   <Ionicons
                     name={isListening ? 'stop-circle' : 'mic-outline'}
                     size={20}
@@ -940,7 +1017,11 @@ export default function ChatBot() {
                 <Ionicons name={isTyping ? 'hourglass-outline' : 'send'} size={20} color={COLORS.cream} />
               </Pressable>
             </View>
+<<<<<<< HEAD
           </ThemeImageBackground>
+=======
+          </ImageBackground>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         </KeyboardAvoidingView>
       </Modal>
 
@@ -1101,7 +1182,11 @@ export default function ChatBot() {
   );
 }
 
+<<<<<<< HEAD
 const createStyles = (COLORS) => StyleSheet.create({
+=======
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   // FAB
   fab: {
     position: 'absolute',
@@ -1116,7 +1201,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 29,
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
     backgroundColor: COLORS.chatIcon,
+=======
+    backgroundColor: COLORS.red,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 2.5,
     borderColor: COLORS.gold,
     shadowColor: COLORS.gold,
@@ -1142,7 +1231,11 @@ const createStyles = (COLORS) => StyleSheet.create({
 
   // Modal
   modalOverlay: { flex: 1 },
+<<<<<<< HEAD
   chatScreen: { flex: 1, backgroundColor: COLORS.surfaceDeep },
+=======
+  chatScreen: { flex: 1, backgroundColor: 'rgba(5,30,18,0.92)' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   // Header
   chatHeader: {
@@ -1151,7 +1244,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     gap: 8,
     paddingHorizontal: 12,
     paddingBottom: 12,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceDeep,
+=======
+    backgroundColor: 'rgba(5,25,15,0.94)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.gold,
   },
@@ -1195,7 +1292,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     shadowRadius: 4,
   },
   bubbleUser: {
+<<<<<<< HEAD
     backgroundColor: COLORS.userBubble,
+=======
+    backgroundColor: COLORS.red,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderBottomRightRadius: 4,
     borderWidth: 1,
     borderColor: 'rgba(242,187,79,0.3)',
@@ -1235,7 +1336,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 12,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceRaised,
+=======
+    backgroundColor: 'rgba(10,80,45,0.95)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 1.5,
     borderColor: COLORS.gold,
     alignSelf: 'flex-start',
@@ -1252,7 +1357,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     fontSize: 12,
     flexShrink: 1,
   },
+<<<<<<< HEAD
   songChipTextDisabled: { color: COLORS.onSurfaceMuted },
+=======
+  songChipTextDisabled: { color: COLORS.muted },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
   // Suggestions
   suggestions: { flexGrow: 0, flexShrink: 0 },
@@ -1261,7 +1370,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceRaised,
+=======
+    backgroundColor: 'rgba(10,55,32,0.9)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 1.5,
     borderColor: COLORS.gold,
   },
@@ -1278,7 +1391,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     gap: 10,
     paddingHorizontal: 14,
     paddingTop: 10,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceDeep,
+=======
+    backgroundColor: 'rgba(5,25,15,0.95)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderTopWidth: 1.5,
     borderTopColor: COLORS.gold,
   },
@@ -1291,8 +1408,13 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1.5,
     borderColor: COLORS.gold,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceRaised,
     color: COLORS.cream,
+=======
+    backgroundColor: 'rgba(255,248,233,0.95)',
+    color: COLORS.ink,
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     fontFamily: 'NunitoSemiBold',
     fontSize: 13,
   },
@@ -1317,6 +1439,7 @@ const createStyles = (COLORS) => StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
   },
   drawerPanel: {
+<<<<<<< HEAD
       width: '84%',
       maxWidth: 340,
       backgroundColor: COLORS.darkGreen,
@@ -1324,6 +1447,15 @@ const createStyles = (COLORS) => StyleSheet.create({
       borderRightColor: COLORS.gold,
       paddingHorizontal: 16,
     },
+=======
+    width: '84%',
+    maxWidth: 340,
+    backgroundColor: '#072418',
+    borderRightWidth: 2,
+    borderRightColor: COLORS.gold,
+    paddingHorizontal: 16,
+  },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   drawerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1368,14 +1500,22 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderColor: 'transparent',
   },
   sessionItemActive: {
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceRaised,
+=======
+    backgroundColor: 'rgba(14,68,42,0.85)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderColor: COLORS.gold,
   },
   sessionItemMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 },
   sessionItemTextCol: { flex: 1, minWidth: 0 },
   sessionItemTitle: { color: COLORS.cream, fontFamily: 'NunitoSemiBold', fontSize: 13 },
   sessionItemTitleActive: { color: COLORS.gold, fontFamily: 'NunitoExtraBold' },
+<<<<<<< HEAD
   sessionItemDate: { color: COLORS.onSurfaceMuted, fontFamily: 'NunitoRegular', fontSize: 10, marginTop: 2 },
+=======
+  sessionItemDate: { color: 'rgba(255,248,233,0.5)', fontFamily: 'NunitoRegular', fontSize: 10, marginTop: 2 },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   sessionActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sessionActionBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
 
@@ -1501,9 +1641,15 @@ const createStyles = (COLORS) => StyleSheet.create({
   providerInfoBanner: {
     padding: 10,
     borderRadius: 12,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceTint,
     borderWidth: 1,
     borderColor: COLORS.surfaceBorder,
+=======
+    backgroundColor: 'rgba(15,61,40,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(15,61,40,0.18)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     marginTop: 4,
     marginBottom: 4,
   },
@@ -1571,8 +1717,13 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderWidth: 1,
   },
   testResultSuccess: {
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceTint,
     borderColor: COLORS.surfaceBorder,
+=======
+    backgroundColor: '#d4edda',
+    borderColor: '#c3e6cb',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   },
   testResultError: {
     backgroundColor: '#f8d7da',
@@ -1585,8 +1736,13 @@ const createStyles = (COLORS) => StyleSheet.create({
     lineHeight: 16,
   },
   testResultTextSuccess: {
+<<<<<<< HEAD
       color: COLORS.green,
     },
+=======
+    color: '#155724',
+  },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   testResultTextError: {
     color: '#721c24',
   },
@@ -1598,7 +1754,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceRaised,
+=======
+    backgroundColor: 'rgba(10,55,32,0.6)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     borderWidth: 1.5,
     borderColor: COLORS.gold,
   },
@@ -1610,7 +1770,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   // TTS section
   ttsDivider: {
     height: 1,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceBorder,
+=======
+    backgroundColor: 'rgba(10,55,32,0.15)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     marginVertical: 18,
     marginHorizontal: -4,
   },
@@ -1666,7 +1830,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: COLORS.green,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceTint,
+=======
+    backgroundColor: 'rgba(10,55,32,0.07)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   },
   voiceBtnActive: {
     backgroundColor: COLORS.green,
@@ -1690,7 +1858,11 @@ const createStyles = (COLORS) => StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: COLORS.green,
+<<<<<<< HEAD
     backgroundColor: COLORS.surfaceTint,
+=======
+    backgroundColor: 'rgba(10,55,32,0.08)',
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   },
   voiceTestBtnText: {
     color: COLORS.green,

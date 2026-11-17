@@ -5,20 +5,31 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+<<<<<<< HEAD
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
 import { prefetchThemeArtwork } from '../themes/prefetch';
 import emblemFallback from '../assets/mistletunes_adaptive_foreground.png';
 
 const BASE_COLORS = { green: '#073c2c' };
 
+=======
+import benjieBackgroundGif from '../assets/benjie_bg_loop.gif';
+import benjieGif from '../assets/benjie_christmas_running.gif';
+import emblemGif from '../assets/Animated MistleTunes Christmas Emblem.gif';
+import emblemFallback from '../assets/mistletunes_adaptive_foreground.png';
+
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 // Keep Benjie's loading animation and progress-bar travel on the same timer.
 const INTRO_DURATION_MS = 2880;
 const LOGO_DURATION_MS = 3000;
 
 export default function Index() {
+<<<<<<< HEAD
   const { theme } = useTheme();
   const { styles } = useThemeStyles(createStyles, BASE_COLORS);
   useEffect(() => { prefetchThemeArtwork(theme); }, [theme]);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const emblemSize = Math.max(0, Math.min(width * 0.8, (height - insets.top - insets.bottom) * 0.65, 380));
@@ -69,6 +80,7 @@ export default function Index() {
 
   if (!showLoading) {
     return (
+<<<<<<< HEAD
       <View style={[styles.screen, styles.emblemScreen, { backgroundColor: theme.colors.intro, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <StatusBar hidden />
         <Image
@@ -78,6 +90,17 @@ export default function Index() {
           isAnimated={theme.animatedEmblem && !emblemFailed}
           transition={0}
           accessibilityLabel={`MistleTunes ${theme.name} welcome`}
+=======
+      <View style={[styles.screen, styles.emblemScreen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <StatusBar hidden />
+        <Image
+          source={emblemFailed ? emblemFallback : emblemGif}
+          contentFit="contain"
+          autoplay
+          isAnimated={!emblemFailed}
+          transition={0}
+          accessibilityLabel="Animated MistleTunes Christmas emblem"
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           onDisplay={() => setEmblemReady(true)}
           onError={() => {
             if (emblemFailed) setEmblemReady(true);
@@ -90,19 +113,33 @@ export default function Index() {
   }
 
   return (
+<<<<<<< HEAD
     <View style={[styles.screen, { backgroundColor: theme.colors.intro }]}>
       <StatusBar hidden />
       <Image source={theme.assets.loadingBackground} contentFit="cover" autoplay isAnimated style={StyleSheet.absoluteFill} />
       <View pointerEvents="none" style={[styles.tint, { backgroundColor: theme.colors.tint }]} />
+=======
+    <View style={styles.screen}>
+      <StatusBar hidden />
+      <Image source={benjieBackgroundGif} contentFit="cover" autoplay isAnimated style={StyleSheet.absoluteFill} />
+      <View pointerEvents="none" style={styles.tint} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
       <View style={[styles.loadingContent, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.loadingLabel}>Loading{'.'.repeat(loadingDots)}</Text>
         <View style={[styles.progressArea, { width: progressWidth }]}>
           <Animated.View style={[styles.character, { transform: [{ translateX: benjiePosition }] }]}>
+<<<<<<< HEAD
             <Image source={theme.assets.loadingCharacter} contentFit="contain" autoplay isAnimated={theme.animatedCharacter} style={styles.benjieImage} />
           </Animated.View>
           <View style={styles.progressTrack}>
             <Animated.View style={[styles.progressFill, { width: fillWidth, backgroundColor: theme.colors.progress }]} />
+=======
+            <Image source={benjieGif} contentFit="contain" autoplay isAnimated style={styles.benjieImage} />
+          </Animated.View>
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressFill, { width: fillWidth }]} />
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
           </View>
         </View>
       </View>
@@ -110,8 +147,13 @@ export default function Index() {
   );
 }
 
+<<<<<<< HEAD
 const createStyles = (colors) => StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden', backgroundColor: colors.green },
+=======
+const styles = StyleSheet.create({
+  screen: { flex: 1, overflow: 'hidden', backgroundColor: '#073c2c' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   emblemScreen: { alignItems: 'center', justifyContent: 'center' },
   tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 24, 16, 0.16)' },
   loadingContent: { flex: 1, alignItems: 'center', justifyContent: 'center' },

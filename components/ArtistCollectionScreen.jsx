@@ -1,20 +1,31 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+<<<<<<< HEAD
 import ThemeImageBackground from './ThemeImageBackground';
+=======
+import { ImageBackground } from 'expo-image';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+<<<<<<< HEAD
 import { useTheme, useThemeStyles } from '../themes/ThemeProvider';
+=======
+import christmasBackground from '../assets/christmas_bg4.png';
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 import { usePlayback } from './PlaybackContext';
 import SongArtwork from './SongArtwork';
 import { buildArtistCollections } from './artistLibrary';
 import { getArtistCovers, pickArtistCover, removeArtistCover } from './artistArtwork';
 
 export default function ArtistCollectionScreen() {
+<<<<<<< HEAD
   const { styles, colors: COLORS } = useThemeStyles(createStyles, DEFAULT_COLORS);
   const { theme } = useTheme();
   const useLightText = theme.id !== 'halloween';
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const requestedArtist = typeof params.artist === 'string' ? params.artist : '';
@@ -64,6 +75,7 @@ export default function ArtistCollectionScreen() {
   };
 
   return (
+<<<<<<< HEAD
     <ThemeImageBackground source={theme.assets.collection} contentFit="cover" autoplay style={styles.background}>
       <StatusBar barStyle={useLightText ? 'light-content' : 'dark-content'} />
       <View style={[styles.screen, theme.id === 'halloween' && { backgroundColor: 'rgba(255,241,220,0.9)' }]}>
@@ -72,14 +84,29 @@ export default function ArtistCollectionScreen() {
             <Ionicons name="chevron-back" size={25} color={useLightText ? COLORS.cream : COLORS.ink} />
           </Pressable>
           <Text numberOfLines={1} style={[styles.heading, useLightText && { color: COLORS.cream }]}>{collection?.artist ?? requestedArtist ?? 'Artist'}</Text>
+=======
+    <ImageBackground source={christmasBackground} contentFit="cover" style={styles.background}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.screen}>
+        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back to Home" onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={25} color={COLORS.ink} />
+          </Pressable>
+          <Text numberOfLines={1} style={styles.heading}>{collection?.artist ?? requestedArtist ?? 'Artist'}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
         </View>
 
         {collection ? (
           <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 16) + 24 }]} showsVerticalScrollIndicator={false}>
             <View style={styles.artistSummary}>
               <SongArtwork source={coverUri ? { uri: coverUri } : collection.artwork} style={styles.cover} iconSize={56} />
+<<<<<<< HEAD
               <Text style={[styles.artistName, useLightText && { color: COLORS.cream }]}>{collection.artist}</Text>
               <Text style={[styles.songCount, useLightText && { color: COLORS.onSurfaceMuted }]}>{collection.tracks.length} {collection.tracks.length === 1 ? 'song' : 'songs'}</Text>
+=======
+              <Text style={styles.artistName}>{collection.artist}</Text>
+              <Text style={styles.songCount}>{collection.tracks.length} {collection.tracks.length === 1 ? 'song' : 'songs'}</Text>
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
               <Pressable accessibilityRole="button" onPress={() => playArtistTracks()} style={styles.playAllButton}>
                 <Ionicons name="play" size={18} color={COLORS.cream} />
                 <Text style={styles.playAllText}>Play collection</Text>
@@ -120,6 +147,7 @@ export default function ArtistCollectionScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Ionicons name="person-outline" size={32} color={COLORS.green} />
+<<<<<<< HEAD
             <Text style={[styles.emptyText, useLightText && { color: COLORS.cream }]}>No songs found for this artist.</Text>
           </View>
         )}
@@ -131,6 +159,19 @@ export default function ArtistCollectionScreen() {
 const DEFAULT_COLORS = { green: '#164d38', ink: '#29251e', muted: '#655c4e', cream: '#fff8e9' };
 
 const createStyles = (COLORS) => StyleSheet.create({
+=======
+            <Text style={styles.emptyText}>No songs found for this artist.</Text>
+          </View>
+        )}
+      </View>
+    </ImageBackground>
+  );
+}
+
+const COLORS = { green: '#164d38', ink: '#29251e', muted: '#655c4e', cream: '#fff8e9' };
+
+const styles = StyleSheet.create({
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   background: { flex: 1, width: '100%' },
   screen: { flex: 1, backgroundColor: 'transparent' },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
@@ -138,7 +179,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   heading: { flex: 1, color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 21 },
   content: { paddingHorizontal: 20 },
   artistSummary: { alignItems: 'center', paddingVertical: 10, marginBottom: 12 },
+<<<<<<< HEAD
   cover: { width: 190, height: 190, borderRadius: 18, backgroundColor: COLORS.green },
+=======
+  cover: { width: 190, height: 190, borderRadius: 18, backgroundColor: '#d9c7a4' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   artistName: { color: COLORS.ink, fontFamily: 'NunitoExtraBold', fontSize: 23, marginTop: 14, textAlign: 'center' },
   songCount: { color: COLORS.muted, fontFamily: 'NunitoSemiBold', fontSize: 13, marginTop: 3 },
   playAllButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20, marginTop: 14, borderRadius: 22, backgroundColor: COLORS.green },
@@ -148,7 +193,11 @@ const createStyles = (COLORS) => StyleSheet.create({
   coverButtonText: { color: COLORS.green, fontFamily: 'NunitoBold', fontSize: 11 },
   trackList: { gap: 8 },
   trackRow: { minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 8, borderRadius: 12, backgroundColor: 'rgba(255,248,233,0.74)' },
+<<<<<<< HEAD
   trackArt: { width: 42, height: 42, borderRadius: 7, backgroundColor: COLORS.green },
+=======
+  trackArt: { width: 42, height: 42, borderRadius: 7, backgroundColor: '#d9c7a4' },
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   trackDetails: { flex: 1, minWidth: 0 },
   trackTitle: { color: COLORS.ink, fontFamily: 'NunitoBold', fontSize: 13 },
   trackArtist: { color: COLORS.muted, fontFamily: 'NunitoRegular', fontSize: 11, marginTop: 1 },

@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
+<<<<<<< HEAD
 import { deleteVideoFile } from './videoFileService';
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 
 const PODCAST_VIDEO_KEY = 'music-player.podcast-videos';
 const WATCH_HISTORY_KEY = 'music-player.podcast-watch-history';
@@ -72,6 +75,7 @@ export async function pickPodcastCover(videoId) {
     throw error;
   }
 }
+<<<<<<< HEAD
 
 export async function removePodcastEpisode(videoId) {
   const raw = await AsyncStorage.getItem(PODCAST_VIDEO_KEY);
@@ -86,3 +90,5 @@ export async function removePodcastEpisode(videoId) {
   if (removed.coverUri && !updated.some((video) => video.coverUri === removed.coverUri)) await deleteVideoFile(removed.coverUri);
   return updated;
 }
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705

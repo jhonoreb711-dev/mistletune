@@ -1,5 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { localAudioUri } from './transcriptionUtils';
+<<<<<<< HEAD
 
 const LYRICS_MODEL_VERSION = 'groq-whisper-large-v3-karaoke-v5';
 
@@ -31,6 +32,11 @@ export async function clearAllGeneratedLyrics() {
   } catch {}
 }
 
+=======
+import { bundledWhisper } from '../assets/models';
+
+const directory = () => `${FileSystem.documentDirectory}GeneratedLyrics/v2/`;
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 export function cacheHash(text) {
   let hash = 2166136261;
   for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
@@ -46,12 +52,17 @@ export async function lyricsCacheIdentity(track, libraryId) {
   const uri = localAudioUri(track?.source);
   const info = await FileSystem.getInfoAsync(uri);
   if (!info.exists || info.isDirectory) throw new Error('The local song file is no longer available.');
+<<<<<<< HEAD
   return JSON.stringify({ libraryId, id: track.id, uri, size: info.size, modified: info.modificationTime, model: LYRICS_MODEL_VERSION });
+=======
+  return JSON.stringify({ libraryId, id: track.id, uri, size: info.size, modified: info.modificationTime, model: bundledWhisper?.version || 'not-bundled' });
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 }
 export async function readGeneratedLyrics(track, libraryId) {
   const identity = await lyricsCacheIdentity(track, libraryId);
   const path = `${directory()}${cacheHash(identity)}.json`;
   const info = await FileSystem.getInfoAsync(path);
+<<<<<<< HEAD
   if (!info.exists) {
     clearInMemoryLyrics(libraryId, track?.id);
     return null;
@@ -70,11 +81,22 @@ export async function readGeneratedLyrics(track, libraryId) {
   }
 }
 export async function writeGeneratedLyrics(identity, result, trackId = null, libraryId = null) {
+=======
+  if (!info.exists) return null;
+  try {
+    const saved = JSON.parse(await FileSystem.readAsStringAsync(path));
+    if (saved.identity !== identity || saved.schema !== 2 || !validSegments(saved.segments)) return null;
+    return saved;
+  } catch { return null; }
+}
+export async function writeGeneratedLyrics(identity, result) {
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   if (!validSegments(result.segments)) throw new Error('The generated timestamps are invalid.');
   await FileSystem.makeDirectoryAsync(directory(), { intermediates: true });
   const path = `${directory()}${cacheHash(identity)}.json`;
   const temporary = `${path}.part`;
   try {
+<<<<<<< HEAD
     const saved = { ...result, schema: 3, identity, generated: true };
     await FileSystem.writeAsStringAsync(temporary, JSON.stringify(saved));
     await FileSystem.deleteAsync(path, { idempotent: true });
@@ -82,11 +104,20 @@ export async function writeGeneratedLyrics(identity, result, trackId = null, lib
     if (trackId && libraryId) {
       cacheInMemory(libraryId, trackId, identity, saved);
     }
+=======
+    const saved = { ...result, schema: 2, identity, generated: true };
+    await FileSystem.writeAsStringAsync(temporary, JSON.stringify(saved));
+    await FileSystem.deleteAsync(path, { idempotent: true });
+    await FileSystem.moveAsync({ from: temporary, to: path });
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
     return saved;
   } finally { await FileSystem.deleteAsync(temporary, { idempotent: true }).catch(() => {}); }
 }
 export async function deleteGeneratedLyrics(track, libraryId) {
+<<<<<<< HEAD
   clearInMemoryLyrics(libraryId, track?.id);
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
   const identity = await lyricsCacheIdentity(track, libraryId);
   await FileSystem.deleteAsync(`${directory()}${cacheHash(identity)}.json`, { idempotent: true });
 }

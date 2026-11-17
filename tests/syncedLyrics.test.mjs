@@ -2,11 +2,16 @@ import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 const source = await readFile(new URL('../components/syncedLyricsUtils.js', import.meta.url), 'utf8');
+<<<<<<< HEAD
 const { activeSegmentIndex, importedSegments, lyricBoundaries, lyricTimeAt } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+=======
+const { activeSegmentIndex, importedSegments } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 const segments = [{ start: 2, end: 4, text: 'A' }, { start: 7, end: 10, text: 'B' }];
 test('timestamp boundaries and instrumental gaps do not retain a stale highlighted line', () => {
   assert.equal(activeSegmentIndex(segments, 0), -1);
   assert.equal(activeSegmentIndex(segments, 2), 0);
+<<<<<<< HEAD
   assert.equal(activeSegmentIndex(segments, 4), -1);
   assert.equal(activeSegmentIndex(segments, 5), -1);
   assert.equal(activeSegmentIndex(segments, 10.1), -1);
@@ -60,6 +65,12 @@ test('earlier correction, lookahead, seek inverse and continuous sweep agree', (
   assert.equal(wordSweepProgress(2500, 2000, 2400), 1);
   assert.equal(wordSweepProgress(2200, 2000, 2000), 0);
 });
+=======
+  assert.equal(activeSegmentIndex(segments, 4), 0);
+  assert.equal(activeSegmentIndex(segments, 5), -1);
+  assert.equal(activeSegmentIndex(segments, 10.1), -1);
+});
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
 test('seeking backward or forward recomputes the active line without playback history', () => {
   assert.equal(activeSegmentIndex(segments, 9), 1);
   assert.equal(activeSegmentIndex(segments, 3), 0);
@@ -70,6 +81,7 @@ test('seeking backward or forward recomputes the active line without playback hi
 test('imported LRC keeps timestamps and uses track duration for the final line', () => {
   assert.deepEqual(importedSegments([{ time: 1, text: 'A' }, { time: 3, text: 'B' }], 7), [{ start: 1, end: 3, text: 'A' }, { start: 3, end: 7, text: 'B' }]);
 });
+<<<<<<< HEAD
 
 test('per-song delay correction advances lyrics and keeps lyric taps aligned', () => {
   const offsetMs = -2150;
@@ -80,3 +92,5 @@ test('per-song delay correction advances lyrics and keeps lyric taps aligned', (
   assert.equal(effectiveLyricTimeMs(audioPosition, offsetMs, lookaheadMs), 30000);
   assert.equal(effectiveLyricTimeMs(12000, 850, lookaheadMs), 11200);
 });
+=======
+>>>>>>> 2376395559270ab40f72453a5475d22bec935705
