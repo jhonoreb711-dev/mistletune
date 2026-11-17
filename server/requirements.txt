@@ -1,0 +1,4 @@
+flask>=3.0.0
+groq>=1.7.0
+av>=14
+syncedlyrics>=1.0.0

@@ -1,0 +1,21 @@
+node_modules/
+server/config.json
+.expo/
+dist/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+credentials.json
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+
+*.exe
+
+# Download before building; model binaries are bundled in the APK via Metro.
+assets/models/*.pte
+assets/models/*.bin
+assets/models/*.part

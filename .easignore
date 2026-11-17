@@ -1,0 +1,19 @@
+node_modules/
+.expo/
+dist/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+credentials.json
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+assets/models/*.part
+server/.venv/
+server/.cache/
+server/config.json
+server/*.log
+# Qwen weights are downloaded only by the local Python server, not app builds.
